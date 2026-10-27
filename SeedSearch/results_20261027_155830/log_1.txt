@@ -1,0 +1,27 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Searching seed sequence 1793087759826 at 0 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_1.txt
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+near-miss NGNGLU8KLYCF: map: shop on floor 4 offers CLEANSE, DEATHBRINGER, RESTLESSNESS, SPLASH (Neow: NEW_LEAF)
+near-miss 8UCJDZHFSVH1: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers DEFILE (Neow: BOOMING_CONCH)
+near-miss 6XZDVQDF3C3Z: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers POKE (Neow: NEW_LEAF)
+Stopped at 3,500; run again with the same --state to resume.
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Resuming seed sequence 1793087759826 at 3,500 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_1.txt
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+Stopped at 4,350; run again with the same --state to resume.

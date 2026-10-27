@@ -1,0 +1,28 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Searching seed sequence 1793087759832 at 0 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_7.txt
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+near-miss WNZU8TF24B18: map: fight on floor 5 (CUBEX_CONSTRUCT_NORMAL) offers BONE_SHARDS (Neow: NEOWS_TORMENT)
+near-miss 6GEJZRBKUHQ5: map: fight on floor 3 (NIBBITS_WEAK) offers DRAIN_POWER (Neow: ARCANE_SCROLL)
+near-miss YSZ1S2FDXWAJ: map: "?" on floor 3 depends on gold/HP (next event would be THE_LEGENDS_WERE_TRUE) (Neow: ARCANE_SCROLL)
+near-miss 9JWUDRXL414V: map: fight on floor 4 (NIBBITS_WEAK) offers MELANCHOLY (Neow: NUTRITIOUS_OYSTER)
+Stopped at 3,550; run again with the same --state to resume.
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Resuming seed sequence 1793087759832 at 3,550 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_7.txt
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+Stopped at 4,525; run again with the same --state to resume.

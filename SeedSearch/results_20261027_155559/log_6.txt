@@ -1,0 +1,37 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Searching seed sequence 1793087325975 at 0 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_6.txt
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+near-miss WMWXCB64X35H: map: fight on floor 4 (SHRINKER_BEETLE_WEAK) offers POKE (Neow: LEAD_PAPERWEIGHT)
+near-miss MGM17G59YAMB: map: "?" on floor 7 depends on gold/HP (next event would be THE_LEGENDS_WERE_TRUE) (Neow: NUTRITIOUS_OYSTER)
+near-miss 9PKTB9G160MU: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers DEATHBRINGER (Neow: NEOWS_TALISMAN)
+near-miss M6NJP2ZGQDTW: map: "?" on floor 3 becomes event SAPPHIRE_SEED (Neow: LEAD_PAPERWEIGHT)
+near-miss 8WP0CYSMX19T: map: fight on floor 4 (SHRINKER_BEETLE_WEAK) offers REAVE (Neow: NUTRITIOUS_OYSTER)
+near-miss 6SJWXAXTANBH: map: "?" on floor 4 depends on gold/HP (next event would be LUMINOUS_CHOIR) (Neow: PRECISE_SCISSORS)
+near-miss WQAWU2J3N5Y8: map: "?" on floor 3 becomes event WOOD_CARVINGS (Neow: BOOMING_CONCH)
+[10,000 seeds, 84/s] 1 act: 4,983  3 neow: 699  4 fight1: 3,278  5 map: 1,033  7 replay: 7
+near-miss 2SN1VZDWJEZD: map: fight on floor 3 (SLIMES_WEAK) offers POKE (Neow: STONE_HUMIDIFIER)
+near-miss 8M5UWVG4E9G8: map: "?" on floor 3 becomes event AROMA_OF_CHAOS (Neow: LEAD_PAPERWEIGHT)
+near-miss 1D3GV1S0QNAE: map: fight on floor 4 (FUZZY_WURM_CRAWLER_WEAK) offers DEFILE (Neow: PHIAL_HOLSTER)
+near-miss 2JRY5SCM4WJ9: map: shop on floor 3 offers SCRAWL (Neow: PHIAL_HOLSTER)
+near-miss 65RCA3JJHPTG: map: fight on floor 4 (FUZZY_WURM_CRAWLER_WEAK) offers DEFILE (Neow: NEW_LEAF)
+near-miss 3Y4GRUW8A0QG: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers potion FIRE_POTION (Neow: NEW_LEAF)
+near-miss DAL2PGCHRPRS: map: fight on floor 4 (SLIMES_WEAK) offers MELANCHOLY (Neow: NEW_LEAF)
+near-miss BNKSF472G3L5: map: shop on floor 3 offers ERADICATE, LETHALITY, JACK_OF_ALL_TRADES, SCRAWL (Neow: FISHING_ROD)
+near-miss GGW7GUH4MG9B: map: fight on floor 5 (INKLETS_NORMAL) offers potion POWDERED_DEMISE (Neow: NEOWS_TALISMAN)
+[20,000 seeds, 85/s] 1 act: 9,991  3 neow: 1,379  4 fight1: 6,555  5 map: 2,059  7 replay: 16
+near-miss 3QMR9S36YX27: map: shop on floor 4 offers DRAMATIC_ENTRANCE (Neow: STONE_HUMIDIFIER)
+near-miss 3MP2WRZQHGEJ: map: fight on floor 5 (MAWLER_NORMAL) offers REAP (Neow: PHIAL_HOLSTER)
+near-miss MMA0NTHLGCVW: map: "?" on floor 3 depends on gold/HP (next event would be UNREST_SITE) (Neow: ARCANE_SCROLL)
+near-miss T2C1GJ0G4B0W: map: fight on floor 4 (FUZZY_WURM_CRAWLER_WEAK) offers DEFILE, LETHALITY (Neow: PRECISE_SCISSORS)
+near-miss TTXJC217BZF8: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers DRAIN_POWER (Neow: BOOMING_CONCH)
+near-miss 88KFEXFLVRG0: map: "?" on floor 3 becomes event TABLET_OF_TRUTH (Neow: NEW_LEAF)
+[30,000 seeds, 88/s] 1 act: 15,015  3 neow: 2,029  4 fight1: 9,865  5 map: 3,069  7 replay: 22
+Stopped at 30,375; run again with the same --state to resume.

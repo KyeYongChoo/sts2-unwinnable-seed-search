@@ -45,6 +45,11 @@ only weak cards, relics and potions on the way, as evidence that an unwinnable s
   This or That's Ornate relic, Brain Leech, Room Full of Cheese (Gorge), Wellspring (Bottle), Whispering Hollow
   (Gold), and Neow pickups such as Arcane Scroll, Scroll Boxes, Kaleidoscope. Whetstone/Wing Charm use `Niche`.
 - Chest relic: rarity from `TreasureRoomRelics`, relic from the shared bag. Shops always stock one Shop-rarity relic.
+- Events with gold/HP conditions (Whispering Hollow 44g, Morphic Grove 100g, Luminous Choir 100-149g from its own
+  RNG, Unrest Site <=70% HP, Legends Were True >=10 HP) can appear or be skipped depending on play; `MapCheck` tracks
+  min/max gold per route and replays both cases. Relic-giving options (This or That, Luminous Choir tribute, Unrest
+  Site kill) roll rarity on the Rewards RNG. Dense Vegetation's Rest is a rest-site heal plus a fight with normal
+  rewards (event fights don't mark a hallway room visited). Tablet of Truth uses only its own RNG.
 - Pickups that crash natively and are skipped: `LEAFY_POULTICE` (MASSIVE_SCROLL is multiplayer-only).
 - Winged Boots allows free travel (any node in the next row) 3 times, which breaks forced routes; it's excluded via
   `forbiddenNeowRelics`.

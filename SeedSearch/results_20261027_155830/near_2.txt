@@ -1,0 +1,2 @@
+YNBGCES7DNNL	map: "?" on floor 4 becomes event AROMA_OF_CHAOS (Neow: FISHING_ROD)
+F1QEQTBL5WZS	map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers DEFILE (Neow: STONE_HUMIDIFIER)

@@ -179,11 +179,22 @@ static class Sim
     /// <summary>Fights the next encounter of this type and generates its reward screen; marks the room visited.</summary>
     public static CombatResult Fight(RunState state, Player player, RoomType type)
     {
-        var encounter = state.Act.PullNextEncounter(type).ToMutable();
+        var result = FightEncounter(state, player, state.Act.PullNextEncounter(type));
+        state.Act.MarkRoomVisited(type);
+        return result;
+    }
+
+    /// <summary>
+    /// Fights a given encounter and generates its reward screen without marking a room visited, as for a fight inside an
+    /// event (RunManager only marks the base room of the room stack).
+    /// </summary>
+    public static CombatResult FightEncounter(RunState state, Player player, EncounterModel canonical)
+    {
+        var encounter = canonical.ToMutable();
+        var type = encounter.RoomType;
         var room = new CombatRoom(encounter, state);
         var rewards = new RewardsSet(player).WithRewardsFromRoom(room);
         rewards.GenerateWithoutOffering().GetAwaiter().GetResult();
-        state.Act.MarkRoomVisited(type);
 
         var cards = rewards.Rewards.OfType<CardReward>().SelectMany(r => r.Cards).Select(c => c.Id.Entry + (c.IsUpgraded ? "+" : "")).ToList();
         var potion = rewards.Rewards.OfType<PotionReward>().Select(p => p.Potion?.Id.Entry).FirstOrDefault();

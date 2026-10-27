@@ -77,6 +77,83 @@ switch (opts.GetValueOrDefault("command", "help"))
             }
         break;
     }
+    case "recheck":
+    {
+        // Re-runs every filter on seeds listed in a file (first tab/space-separated column), e.g. after a rules change.
+        var seeds = File.ReadLines(opts["arg"]).Select(l => l.Split('\t', ' ')[0].Trim()).Where(x => x.Length > 0).Distinct().ToList();
+        var reasons = new Dictionary<string, int>();
+        int passed = 0;
+        foreach (var seed in seeds)
+        {
+            Search.Verdict v;
+            try { v = Search.Check(seed, config); }
+            catch (Exception e) { v = new(false, "error: " + e.GetType().Name + " " + e.Message); }
+            if (v.Passed)
+            {
+                passed++;
+                Console.WriteLine(Report.Summary(seed, v));
+                if (opts.TryGetValue("out", out var outPath))
+                    File.AppendAllText(outPath, Report.Summary(seed, v) + Environment.NewLine);
+            }
+            else
+            {
+                string key = System.Text.RegularExpressions.Regex.Replace(v.FailedAt!, @"floor \d+|\(Neow: [A-Z_]+\)|\([A-Z_]+\) offers.*| offers .*|event [A-Z_]+|would be [A-Z_]+", m => m.Value.StartsWith("floor") ? "floor N" : m.Value.StartsWith("event") || m.Value.StartsWith("would") ? m.Value : "");
+                reasons[key.Trim()] = reasons.GetValueOrDefault(key.Trim()) + 1;
+            }
+        }
+        Console.WriteLine($"{seeds.Count} seeds rechecked, {passed} pass. Failures:");
+        foreach (var (k, n) in reasons.OrderByDescending(kv => kv.Value).Take(25))
+            Console.WriteLine($"  {n,5}  {k}");
+        break;
+    }
+    case "banodds":
+    {
+        // How often a run's combat card rewards never offer a banned card. --sets "A,B|C|D" are cumulative ban lists;
+        // --fights is the sequence of rooms (M hallway, E elite, B boss, S shop) whose cards are generated in order.
+        var sets = opts["sets"].Split('|').Select(s => s.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList()).ToList();
+        foreach (var id in sets.SelectMany(s => s).Where(id => !ModelDb.AllCards.Any(c => c.Id.Entry == id)))
+            throw new InvalidDataException("unknown card " + id);
+        string fights = opts.GetValueOrDefault("fights",
+            "MMMMEMMMEMMMMEB" + "MMMMEMMMEMMMMEB" + "MMMMEMMMEMMMMEM");
+        int n = int.Parse(opts.GetValueOrDefault("count", "2000"));
+        var rng = new Rng(ulong.Parse(opts.GetValueOrDefault("from", "5")));
+        var clean = new long[sets.Count];
+        var seen = new long[sets.Count];
+        for (int i = 0; i < n; i++)
+        {
+            var state = Sim.NewRun(SeedHelper.GetRandomSeed(rng), allActsRooms: false);
+            var offered = new HashSet<string>();
+            int total = 0;
+            foreach (var f in fights)
+            {
+                if (f == 'S')
+                {
+                    // A shop visit: every card on sale (5 class, 2 colorless) from the game's own inventory.
+                    var shop = MegaCrit.Sts2.Core.Entities.Merchant.MerchantInventory.CreateForNormalMerchant(state.Players[0]);
+                    foreach (var e in shop.CardEntries.Where(e => e.CreationResult != null)) { offered.Add(e.CreationResult!.Card.Id.Entry); total++; }
+                    continue;
+                }
+                var type = f switch { 'E' => RoomType.Elite, 'B' => RoomType.Boss, _ => RoomType.Monster };
+                foreach (var c in Sim.Fight(state, state.Players[0], type).Cards) { offered.Add(c.TrimEnd('+')); total++; }
+            }
+            var banned = new HashSet<string>();
+            for (int k = 0; k < sets.Count; k++)
+            {
+                banned.UnionWith(sets[k]);
+                int hits = offered.Count(banned.Contains);
+                if (hits == 0) clean[k]++;
+                seen[k] += hits;
+            }
+        }
+        Console.WriteLine($"{n:N0} seeds, ascension {config.ascension}: {fights.Count(c => c == 'M')} hallway, {fights.Count(c => c == 'E')} elite, {fights.Count(c => c == 'B')} boss, {fights.Count(c => c == 'S')} shops:");
+        int size = 0;
+        for (int k = 0; k < sets.Count; k++)
+        {
+            size += sets[k].Count;
+            Console.WriteLine($"  bans 1..{k + 1} ({size} cards): no banned card offered in {clean[k]}/{n} = {clean[k] / (double)n:P3}; avg distinct banned cards offered {seen[k] / (double)n:F2}");
+        }
+        break;
+    }
     case "relictest":
         // Finds which relics' pickup effects can run without the engine (a native crash kills the process).
         Sim.RewardsAfterNeow("AGRTQKUWEH84", opts["arg"], 1, includeFirstElite: false);

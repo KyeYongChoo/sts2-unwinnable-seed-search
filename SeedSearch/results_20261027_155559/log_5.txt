@@ -1,0 +1,32 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Searching seed sequence 1793087325974 at 0 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_5.txt
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+near-miss 4N7N4NV72CDH: map: shop on floor 3 offers potion BONE_BREW (Neow: BOOMING_CONCH)
+near-miss 9ZYN57SN1NW0: map: shop on floor 3 offers PROWESS, BEAT_DOWN (Neow: FISHING_ROD)
+near-miss 31Z86PUNHTVD: map: fight on floor 4 (FUZZY_WURM_CRAWLER_WEAK) offers REAVE (Neow: NEW_LEAF)
+near-miss F3RN35QF4XKV: map: "?" on floor 3 depends on gold/HP (next event would be UNREST_SITE) (Neow: GOLDEN_PEARL)
+near-miss NLLNJLYUUFB6: map: fight on floor 3 (NIBBITS_WEAK) offers DEATHBRINGER (Neow: STONE_HUMIDIFIER)
+near-miss K6RNTWXSNBX7: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers CLEANSE (Neow: GOLDEN_PEARL)
+near-miss ZA7D7AFEM7XU: map: "?" on floor 3 becomes event TABLET_OF_TRUTH (Neow: SMALL_CAPSULE)
+[10,000 seeds, 79/s] 1 act: 4,905  3 neow: 677  4 fight1: 3,332  5 map: 1,079  7 replay: 7
+near-miss 3NL2KDX431W1: map: fight on floor 4 (SLIMES_WEAK) offers BONE_SHARDS (Neow: GOLDEN_PEARL)
+near-miss 5AP5385VJ7NQ: map: fight on floor 3 (SLIMES_WEAK) offers POKE (Neow: LEAD_PAPERWEIGHT)
+near-miss HNM1AF883Y7A: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers REAVE (Neow: FISHING_ROD)
+near-miss 3V4U8Z49QR9A: map: fight on floor 4 (SHRINKER_BEETLE_WEAK) offers POKE, LETHALITY (Neow: PHIAL_HOLSTER)
+near-miss 13N3WYF0HDN1: map: fight on floor 4 (NIBBITS_WEAK) offers potion FIRE_POTION (Neow: ARCANE_SCROLL)
+near-miss T9D1H14A58EC: map: "?" on floor 4 depends on gold/HP (next event would be THE_LEGENDS_WERE_TRUE) (Neow: LEAD_PAPERWEIGHT)
+near-miss LFHEE4R0A42P: map: fight on floor 5 (NIBBITS_NORMAL) offers LETHALITY (Neow: NEW_LEAF)
+near-miss CBFTBHDZNH1N: map: shop on floor 3 offers UNDEATH, CLEANSE, THRUMMING_HATCHET, JACKPOT (Neow: POMANDER)
+[20,000 seeds, 83/s] 1 act: 9,951  3 neow: 1,304  4 fight1: 6,658  5 map: 2,072  7 replay: 15
+near-miss WRT45RB62FDU: map: fight on floor 3 (SLIMES_WEAK) offers DEFILE (Neow: NEW_LEAF)
+near-miss ZG5RRV70CMJH: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers REAVE (Neow: GOLDEN_PEARL)
+near-miss 48N8TX8N8YHA: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers potion POWDERED_DEMISE (Neow: PRECISE_SCISSORS)
+Stopped at 28,825; run again with the same --state to resume.

@@ -1,0 +1,28 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Searching seed sequence 1793087759830 at 0 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_5.txt
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+near-miss SWE3P1VUD9G1: map: shop on floor 4 offers POKE (Neow: LEAD_PAPERWEIGHT)
+near-miss SX7Q9KQ3ZETT: map: fight on floor 6 (RUBY_RAIDERS_NORMAL) offers REAP, DEFILE (Neow: NEOWS_TORMENT)
+Stopped at 3,525; run again with the same --state to resume.
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Resuming seed sequence 1793087759830 at 3,525 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_5.txt
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+near-miss MHTAXKNH6KR4: map: fight on floor 3 (NIBBITS_WEAK) offers DEFILE, DRAIN_POWER (Neow: STONE_HUMIDIFIER)
+near-miss 5VPYY1029024: map: shop on floor 3 offers DRAIN_POWER, BOLAS (Neow: LEAD_PAPERWEIGHT)
+Stopped at 4,875; run again with the same --state to resume.

@@ -1,0 +1,37 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Searching seed sequence 1793087325969 at 0 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_0.txt
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+near-miss 73H7WTQ2UZV9: map: fight on floor 4 (FUZZY_WURM_CRAWLER_WEAK) offers potion LUCKY_TONIC (Neow: BOOMING_CONCH)
+near-miss PVF1UB8VN6KN: map: fight on floor 5 (OVERGROWTH_CRAWLERS) offers DRAIN_POWER (Neow: NEOWS_TALISMAN)
+near-miss 11V2DRVAMHXZ: map: shop on floor 4 offers DEFILE, REAP, DISCOVERY (Neow: POMANDER)
+near-miss LB2J7JDE1Q37: map: "?" on floor 3 becomes event SAPPHIRE_SEED (Neow: LOST_COFFER)
+near-miss XJ2DGF2KL1MG: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers LETHALITY, MELANCHOLY (Neow: FISHING_ROD)
+[10,000 seeds, 80/s] 1 act: 4,996  3 neow: 663  4 fight1: 3,293  5 map: 1,043  7 replay: 5
+near-miss 5UBR0AVT89KX: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers DRAIN_POWER (Neow: NEOWS_TORMENT)
+near-miss DB220FYBDRGW: map: fight on floor 4 (FUZZY_WURM_CRAWLER_WEAK) offers BONE_SHARDS (Neow: PRECISE_SCISSORS)
+near-miss L9L7RZ3DACWY: map: fight on floor 4 (FUZZY_WURM_CRAWLER_WEAK) offers POKE, REAP (Neow: PRECISE_SCISSORS)
+near-miss 1LGG8PK9U8F1: map: fight on floor 4 (FUZZY_WURM_CRAWLER_WEAK) offers MELANCHOLY (Neow: KALEIDOSCOPE)
+near-miss BVHZM6SP2QX6: map: fight on floor 4 (SLIMES_WEAK) offers REAP (Neow: POMANDER)
+near-miss C2SKJ97SAHXZ: map: fight on floor 4 (SLIMES_WEAK) offers REAP, REAVE (Neow: LAVA_ROCK)
+near-miss 2NDTW9LUN88B: map: "?" on floor 3 depends on gold/HP (next event would be UNREST_SITE) (Neow: PRECISE_SCISSORS)
+[20,000 seeds, 83/s] 1 act: 10,070  3 neow: 1,295  4 fight1: 6,523  5 map: 2,100  7 replay: 12
+near-miss ZXJEVUWF77C3: map: "?" on floor 3 becomes event DENSE_VEGETATION (Neow: LAVA_ROCK)
+near-miss S55T5BR2YFNR: map: shop on floor 5 offers BONE_SHARDS, LETHALITY, BOLAS (Neow: GOLDEN_PEARL)
+near-miss YT3ZCSSJ8303: map: "?" on floor 3 becomes event WOOD_CARVINGS (Neow: POMANDER)
+near-miss C0UF27P0L4C9: map: WHISPERING_HOLLOW on floor 4 offers potion POWDERED_DEMISE (Neow: FISHING_ROD)
+near-miss MVPXJA7NYQB6: map: "?" on floor 4 depends on gold/HP (next event would be UNREST_SITE) (Neow: PRECISE_SCISSORS)
+near-miss XSG2ZMCMUDCN: map: fight on floor 3 (NIBBITS_WEAK) offers DEFILE, BONE_SHARDS (Neow: LEAD_PAPERWEIGHT)
+near-miss XTFAWGG5KKU9: map: "?" on floor 3 depends on gold/HP (next event would be MORPHIC_GROVE) (Neow: NUTRITIOUS_OYSTER)
+near-miss XP96SZNPSSB7: map: "?" on floor 4 becomes event WOOD_CARVINGS (Neow: KALEIDOSCOPE)
+near-miss HGQSEDRZY1VJ: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers REAVE (Neow: GOLDEN_PEARL)
+near-miss GFZQLNYH5ULH: map: fight on floor 3 (NIBBITS_WEAK) offers REAP (Neow: BOOMING_CONCH)
+near-miss 5U5W458DZYW1: map: ROOM_FULL_OF_CHEESE on floor 3 offers DRAIN_POWER (Neow: STONE_HUMIDIFIER)
+Stopped at 29,475; run again with the same --state to resume.

@@ -1,0 +1,2 @@
+VDNVHENYU82L	map: shop on floor 4 offers DRAIN_POWER, HIDDEN_GEM (Neow: NEOWS_TORMENT)
+QDUZKPQTLPBZ	map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers POKE (Neow: KALEIDOSCOPE)

@@ -1,0 +1,29 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Searching seed sequence 1793087325973 at 0 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_4.txt
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+near-miss J9UWRXVDUTEC: map: shop on floor 4 offers END_OF_DAYS (Neow: FISHING_ROD)
+near-miss TQUE1MJW95Q6: map: "?" on floor 4 becomes event AROMA_OF_CHAOS (Neow: KALEIDOSCOPE)
+near-miss 4X09UPPZ07HZ: map: "?" on floor 3 depends on gold/HP (next event would be LUMINOUS_CHOIR) (Neow: LEAD_PAPERWEIGHT)
+near-miss 9ETNTXC982RE: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers BONE_SHARDS (Neow: NEW_LEAF)
+near-miss X0TWQ3HF6T94: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers REAVE (Neow: FISHING_ROD)
+near-miss 4XAJDN9FANGL: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers CLEANSE (Neow: NEOWS_TALISMAN)
+[10,000 seeds, 86/s] 1 act: 5,064  3 neow: 651  4 fight1: 3,296  5 map: 983  7 replay: 6
+near-miss 9M5MXQW9NENA: map: shop on floor 3 offers THE_BOMB, GOLD_AXE (Neow: NEOWS_TORMENT)
+near-miss N0PAJ7Z09EAP: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers LETHALITY (Neow: NEW_LEAF)
+[20,000 seeds, 88/s] 1 act: 10,000  3 neow: 1,335  4 fight1: 6,654  5 map: 2,003  7 replay: 8
+near-miss AFVQ951NATJ2: map: BRAIN_LEECH on floor 5 offers REAVE (Neow: NEOWS_TORMENT)
+near-miss M43M9LRSHQFH: map: fight on floor 3 (SLIMES_WEAK) offers MELANCHOLY (Neow: LAVA_ROCK)
+near-miss VNBL3ZBZCVBX: map: "?" on floor 5 becomes event AROMA_OF_CHAOS (Neow: NUTRITIOUS_OYSTER)
+near-miss AW047UVL5J4W: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers REAP (Neow: POMANDER)
+near-miss PAYRYJY9L4JF: map: ROOM_FULL_OF_CHEESE on floor 4 offers DEFILE, POKE (Neow: NEOWS_TORMENT)
+near-miss JR7HZD5M4E60: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers REAVE (Neow: PHIAL_HOLSTER)
+[30,000 seeds, 90/s] 1 act: 15,050  3 neow: 1,986  4 fight1: 9,947  5 map: 3,003  7 replay: 14
+Stopped at 31,050; run again with the same --state to resume.

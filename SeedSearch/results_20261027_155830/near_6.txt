@@ -1,0 +1,3 @@
+50CQGPMWL0KU	map: Neow pickup offers potion POWER_POTION (Neow: LOST_COFFER)
+3SRSLKKCTNFH	map: fight on floor 4 (FUZZY_WURM_CRAWLER_WEAK) offers REAVE (Neow: NEOWS_TALISMAN)
+Q6J1U2X2ZH58	map: fight on floor 3 (NIBBITS_WEAK) offers REAP (Neow: PHIAL_HOLSTER)

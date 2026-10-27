@@ -1,11 +1,13 @@
 using System.Reflection;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Ascension;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Merchant;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Extensions;
 using MegaCrit.Sts2.Core.Factories;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Models;
@@ -25,14 +27,6 @@ using MegaCrit.Sts2.Core.Runs;
 /// </summary>
 static class MapCheck
 {
-    /// <summary>Events whose IsAllowed depends on gold or HP, i.e. on how the player played. If one of these is next in the
-    /// event queue, what a "?" becomes is not forced, so the route counts as escapable. (Whispering Hollow, which needs
-    /// 44 gold, is handled separately: it is forced unless gold could have been spent at a shop.)</summary>
-    static readonly HashSet<string> _playDependentEvents = new()
-    {
-        "LUMINOUS_CHOIR", "MORPHIC_GROVE", "UNREST_SITE", "THE_LEGENDS_WERE_TRUE",
-    };
-
     /// <summary>Relic hooks that can change later rewards or "?" rolls. Buying such a relic in a shop is replayed both ways.</summary>
     static readonly HashSet<string> _rewardHooks = new()
     {
@@ -139,6 +133,10 @@ static class MapCheck
         public List<string> Labels { get; } = new();
         public List<string> SeenCards { get; } = new();
         public bool VisitedShop { get; set; }
+        /// <summary>Lowest and highest gold the player could have here: fight and event gold can be skipped, chest gold
+        /// can't, and a shop or a paid event option can spend it all.</summary>
+        public int MinGold { get; set; }
+        public int MaxGold { get; set; }
 
         public bool Decide(string label)
         {
@@ -177,6 +175,7 @@ static class MapCheck
         var neowProblem = ctx.BadPotions(neowOffered.Potions, "Neow pickup");
         if (neowProblem != null)
             return (null, ctx.Decisions, neowProblem);
+        ctx.MinGold = ctx.MaxGold = player.Gold;
         state.Map = map;
         state.AppendToMapPointHistory(MapPointType.Ancient, RoomType.Event, ModelDb.AncientEvent<MegaCrit.Sts2.Core.Models.Events.Neow>().Id);
         var act = state.Act;
@@ -209,6 +208,7 @@ static class MapCheck
                     problem = ctx.BadCards(fight.Cards, where) ?? (fight.Potion == null ? null : ctx.BadPotions(new[] { fight.Potion }, where));
                     rooms.Add(new Room(floor, q + fight.Encounter, fight.Cards, fight.Potion));
                     modelId = ModelDb.AllEncounters.First(e => e.Id.Entry == fight.Encounter).Id;
+                    ctx.MaxGold += fight.Gold;
                     break;
                 }
                 case RoomType.Treasure:
@@ -218,7 +218,11 @@ static class MapCheck
                     string? relicId = null;
                     if (Hook.ShouldGenerateTreasure(state, player))
                     {
-                        player.PlayerRng.Rewards.NextInt(42, 53);
+                        double gold = player.PlayerRng.Rewards.NextInt(42, 53);
+                        if (AscensionHelper.HasAscension(AscensionLevel.Poverty))
+                            gold *= AscensionHelper.PovertyAscensionGoldMultiplier;
+                        ctx.MinGold += (int)gold;
+                        ctx.MaxGold += (int)gold;
                         var rarity = RelicFactory.RollRarity(state.Rng.TreasureRoomRelics);
                         relicId = (state.SharedRelicGrabBag.PullFromFront(rarity, state) ?? RelicFactory.FallbackRelic).Id.Entry;
                         problem = ctx.BadRelic(relicId, $"chest on floor {floor}");
@@ -233,20 +237,19 @@ static class MapCheck
                     break;
                 case RoomType.Event:
                 {
-                    var (expected, skipHollow, eventProblem) = NextForcedEvent(ctx);
+                    var (index, eventProblem) = NextForcedEvent(ctx);
                     if (eventProblem != null)
                         return (null, ctx.Decisions, $"\"?\" on floor {floor} {eventProblem}");
-                    // Skipping Whispering Hollow means the player has under 44 gold; mirror that for the game's own pick.
-                    int gold = player.Gold;
-                    if (skipHollow) player.Gold = 0;
-                    var ev = act.PullNextEvent(state);
-                    player.Gold = gold;
-                    if (ev.Id != expected!.Id)
-                        throw new InvalidOperationException($"Event prediction mismatch: {expected.Id.Entry} vs {ev.Id.Entry}");
+                    // ActModel.PullNextEvent, with the skips decided above instead of the sim's own gold and HP.
+                    var set = _rooms(act);
+                    set.eventsVisited = index;
+                    var ev = Hook.ModifyNextEvent(state, set.NextEvent);
+                    state.AddVisitedEvent(ev);
                     if (!config.allowedEvents.Contains(ev.Id.Entry))
                         return (null, ctx.Decisions, $"\"?\" on floor {floor} becomes event {ev.Id.Entry}");
                     modelId = ev.Id;
                     var (detail, relicId, evProblem) = Event(ctx, ev, floor);
+                    ctx.MaxGold += 400; // more than any allowed event's gold option
                     problem = evProblem;
                     rooms.Add(new Room(floor, "?" + ev.Id.Entry, Relic: relicId, Detail: detail));
                     break;
@@ -272,6 +275,7 @@ static class MapCheck
     static string? Shop(Ctx ctx, int floor, string q, List<Room> rooms)
     {
         ctx.VisitedShop = true;
+        ctx.MinGold = 0;
         var inventory = MerchantInventory.CreateForNormalMerchant(ctx.Player);
         var cards = inventory.CardEntries.Where(e => e.CreationResult != null).Select(e => e.CreationResult!.Card.Id.Entry).ToList();
         var relics = inventory.RelicEntries.Where(e => e.Model != null).Select(e => e.Model!.Id.Entry).ToList();
@@ -313,10 +317,9 @@ static class MapCheck
                 // Ornate: next relic from the player's bag, rarity rolled on the Rewards RNG, plus Clumsy. Plain: gold.
                 if (!ctx.Decide($"This or That relic on floor {floor}"))
                     return ("Plain", null, null);
-                var relic = RelicFactory.PullNextRelicFromFront(player).Id.Entry;
-                if (ctx.BadRelic(relic, where) is { } relicProblem)
+                var (relic, relicProblem) = BagRelic(ctx, where);
+                if (relicProblem != null)
                     return (null, relic, relicProblem);
-                Sim.Obtain(player, relic);
                 CardPileCmd.AddCurseToDeck<Clumsy>(player).GetAwaiter().GetResult();
                 return ("Ornate", relic, null);
 
@@ -381,7 +384,7 @@ static class MapCheck
                     var canonical = ModelDb.AllCards.First(c => c.Id.Entry == id);
                     var original = ctx.State.CreateCard(canonical, player);
                     if (!original.IsTransformable) continue;
-                    var rng = new Rng(ctx.State.Rng.Seed + (ulong)(ev.IsShared ? 0 : ctx.State.GetPlayerSlotIndex(player)) + MegaCrit.Sts2.Core.Helpers.StringHelper.GetDeterministicHashCode(ev.Id.Entry));
+                    var rng = EventRng(ctx, ev);
                     rng.NextInt(-9, 10); // CalculateVars
                     var replacement = CardFactory.CreateRandomCardForTransform(original, false, rng);
                     results.Add($"{id}->{replacement.Id.Entry}");
@@ -391,42 +394,112 @@ static class MapCheck
                 return ("Hug: " + string.Join(", ", results), null, null);
             }
 
+            case "LUMINOUS_CHOIR":
+            {
+                // Offer Tribute: pay the gold, then a relic from the player's bag (rarity on the Rewards RNG).
+                if (!ctx.Decide($"Luminous Choir tribute on floor {floor}"))
+                    return ("Reach Into the Flesh", null, null);
+                ctx.MinGold = 0;
+                var (tribute, problem) = BagRelic(ctx, where);
+                return ("Offer Tribute", tribute, problem);
+            }
+
+            case "UNREST_SITE":
+            {
+                // Kill: lose max HP, then a relic from the player's bag (rarity on the Rewards RNG). Rest: heal + Poor Sleep.
+                if (!ctx.Decide($"Unrest Site kill on floor {floor}"))
+                    return ("Rest", null, null);
+                var (killRelic, problem) = BagRelic(ctx, where);
+                return ("Kill", killRelic, problem);
+            }
+
+            case "THE_LEGENDS_WERE_TRUE":
+            {
+                // Slowly Find an Exit: a random potion picked with the Rewards RNG. Nab the Map: a Spoils Map (chest gold).
+                if (!ctx.Decide($"Legends Were True exit on floor {floor}"))
+                    return ("Nab the Map", null, null);
+                var items = player.Character.PotionPool.GetUnlockedPotions(player.UnlockState)
+                    .Concat(ModelDb.PotionPool<SharedPotionPool>().GetUnlockedPotions(player.UnlockState));
+                var potion = player.PlayerRng.Rewards.NextItem(items)?.Id.Entry;
+                return ("Find an Exit: " + potion, null, potion == null ? null : ctx.BadPotions(new[] { potion }, where));
+            }
+
+            case "DENSE_VEGETATION":
+            {
+                // Rest: a rest-site heal, then a fight with normal hallway rewards (cards, potion roll, gold).
+                if (!ctx.Decide($"Dense Vegetation rest + fight on floor {floor}"))
+                    return ("Trudge On", null, null);
+                var fight = Sim.FightEncounter(ctx.State, player, ModelDb.Encounter<MegaCrit.Sts2.Core.Models.Encounters.DenseVegetationEventEncounter>());
+                ctx.MaxGold += fight.Gold;
+                string fightWhere = $"{where} fight";
+                var problem = ctx.BadCards(fight.Cards, fightWhere) ?? (fight.Potion == null ? null : ctx.BadPotions(new[] { fight.Potion }, fightWhere));
+                return ($"Rest + fight: {string.Join(", ", fight.Cards)}" + (fight.Potion != null ? $" + potion {fight.Potion}" : ""), null, problem);
+            }
+
             default:
-                // Sunken Treasury, Jungle Maze, Byrdonis Nest, Self Help Book, Slippery Bridge, Sunken Statue: their choices
-                // only use the event's own RNG and give gold, HP, enchantments or fixed cards/relics.
+                // Sunken Treasury, Jungle Maze, Byrdonis Nest, Self Help Book, Slippery Bridge, Sunken Statue, Doors of Light
+                // and Dark, Wood Carvings: their choices only use the event's own RNG and give gold, HP, upgrades,
+                // enchantments, removals or fixed cards/relics.
                 return (null, null, null);
         }
     }
 
-    // Mirrors RoomSet.EnsureNextEventIsValid. Returns the event the game will pick, whether Whispering Hollow is being
-    // skipped (the player spent gold below 44 at a shop), or a problem if the pick depends on play in another way.
-    static (EventModel?, bool, string?) NextForcedEvent(Ctx ctx)
+    // RelicFactory.PullNextRelicFromFront(player): rarity rolled on the Rewards RNG, relic from the player's bag.
+    static (string relic, string? problem) BagRelic(Ctx ctx, string where)
+    {
+        var relic = RelicFactory.PullNextRelicFromFront(ctx.Player).Id.Entry;
+        var problem = ctx.BadRelic(relic, where);
+        if (problem == null)
+            Sim.Obtain(ctx.Player, relic);
+        return (relic, problem);
+    }
+
+    static Rng EventRng(Ctx ctx, EventModel ev) =>
+        new(ctx.State.Rng.Seed + (ulong)(ev.IsShared ? 0 : ctx.State.GetPlayerSlotIndex(ctx.Player)) + StringHelper.GetDeterministicHashCode(ev.Id.Entry));
+
+    // Mirrors RoomSet.EnsureNextEventIsValid: the first unseen event in the queue that is allowed. Several events are
+    // allowed only at some gold or HP, which depends on play (gold rewards taken or skipped, shopping, damage taken), so
+    // where an event could either appear or be skipped, both cases are replayed. Returns the queue index of the pick.
+    static (int index, string? problem) NextForcedEvent(Ctx ctx)
     {
         var set = _rooms(ctx.State.Act);
-        bool skipHollow = false;
         for (int i = 0; i < set.events.Count; i++)
         {
-            var ev = set.events[(set.eventsVisited + i) % set.events.Count];
+            int index = set.eventsVisited + i;
+            var ev = set.events[index % set.events.Count];
             if (ctx.State.VisitedEventIds.Contains(ev.Id))
                 continue;
-            if (_playDependentEvents.Contains(ev.Id.Entry))
-                return (null, false, $"depends on gold/HP (next event would be {ev.Id.Entry})");
-            if (ev.Id.Entry == "WHISPERING_HOLLOW")
-            {
-                // Needs 44 gold. Gold only drops below the starting amount by spending it at a shop, so it's forced
-                // unless a shop came first; then both cases are replayed.
-                if (!ev.IsAllowed(ctx.State))
-                    continue;
-                if (ctx.VisitedShop && ctx.Decide("Whispering Hollow skipped (gold spent below 44)"))
-                {
-                    skipHollow = true;
-                    continue;
-                }
-                return (ev, skipHollow, null);
-            }
-            if (ev.IsAllowed(ctx.State))
-                return (ev, skipHollow, null);
+            var (canAppear, canSkip) = CanAppear(ctx, ev);
+            if (!canAppear)
+                continue;
+            if (canSkip && ctx.Decide($"{ev.Id.Entry} skipped (its gold/HP condition not met)"))
+                continue;
+            return (index, null);
         }
-        return (null, false, "has no event left");
+        return (-1, "has no event left");
     }
+
+    static (bool appear, bool skip) CanAppear(Ctx ctx, EventModel ev)
+    {
+        switch (ev.Id.Entry)
+        {
+            case "WHISPERING_HOLLOW":
+                return Gold(ctx, 44);
+            case "MORPHIC_GROVE":
+                return Gold(ctx, 100); // also needs 2 transformable cards, which the deck always has this early
+            case "LUMINOUS_CHOIR":
+                return Gold(ctx, 149 - EventRng(ctx, ev).NextInt(0, 50)); // its CalculateVars
+            case "UNREST_SITE":
+                return (true, true); // needs HP at most 70%, which depends on damage taken
+            case "THE_LEGENDS_WERE_TRUE":
+            {
+                bool allowed = ev.IsAllowed(ctx.State); // act 1 and full HP here; under 10 HP would skip it
+                return (allowed, allowed);
+            }
+            default:
+                return (ev.IsAllowed(ctx.State), false);
+        }
+    }
+
+    static (bool, bool) Gold(Ctx ctx, int needed) => (ctx.MaxGold >= needed, ctx.MinGold < needed);
 }

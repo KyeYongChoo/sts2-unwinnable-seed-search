@@ -1,0 +1,35 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Searching seed sequence 1793087325972 at 0 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_3.txt
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+near-miss ZAEN9Z72N8QJ: map: fight on floor 4 (SHRINKER_BEETLE_WEAK) offers REAVE (Neow: ARCANE_SCROLL)
+near-miss 2PMJLNB6CCKG: map: "?" on floor 3 becomes event SAPPHIRE_SEED (Neow: PHIAL_HOLSTER)
+near-miss HE2JAZK2XJX8: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers POKE (Neow: PRECISE_SCISSORS)
+near-miss V055VCSB6TS0: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers REAVE (Neow: GOLDEN_PEARL)
+near-miss 6CP4KMLGC3SL: map: fight on floor 5 (MAWLER_NORMAL) offers potion POWER_POTION (Neow: PRECISE_SCISSORS)
+near-miss SWHJ9343BZ0G: map: shop on floor 3 offers FINESSE (Neow: NUTRITIOUS_OYSTER)
+[10,000 seeds, 82/s] 1 act: 4,997  3 neow: 639  4 fight1: 3,345  5 map: 1,013  7 replay: 6
+near-miss Q1K78HNRS3SR: map: shop on floor 5 offers DRAIN_POWER, FISTICUFFS (Neow: NEW_LEAF)
+near-miss RVHDM1JZZ4UX: map: fight on floor 4 (NIBBITS_WEAK) offers REAVE, DRAIN_POWER (Neow: NEOWS_TORMENT)
+near-miss 5D400FMC39XA: map: fight on floor 3 (SLIMES_WEAK) offers REAVE (Neow: SMALL_CAPSULE)
+near-miss 7RR9K7LZA94P: map: Neow pickup offers potion FIRE_POTION (Neow: LOST_COFFER)
+near-miss 8CPYDUSNQ3D1: map: "?" on floor 7 becomes event DENSE_VEGETATION (Neow: ARCANE_SCROLL)
+[20,000 seeds, 86/s] 1 act: 9,958  3 neow: 1,312  4 fight1: 6,679  5 map: 2,040  7 replay: 11
+near-miss ZGZKUYDEFFHB: map: fight on floor 4 (SLIMES_WEAK) offers DRAIN_POWER (Neow: LEAD_PAPERWEIGHT)
+near-miss B6KTP09FXMDX: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers LETHALITY (Neow: BOOMING_CONCH)
+near-miss CFLWZ3NHXQMR: map: fight on floor 5 (SLIMES_NORMAL) offers DEFILE (Neow: NEOWS_TORMENT)
+near-miss JY4GTWGF2RBL: map: fight on floor 4 (NIBBITS_WEAK) offers POKE (Neow: NUTRITIOUS_OYSTER)
+near-miss 43KU318QRJCD: map: Neow pickup offers potion FIRE_POTION (Neow: LOST_COFFER)
+near-miss VSBB33STV68Y: map: "?" on floor 3 becomes event AROMA_OF_CHAOS (Neow: ARCANE_SCROLL)
+near-miss EJ9KWAVWR7YW: map: fight on floor 3 (NIBBITS_WEAK) offers DEFILE (Neow: PHIAL_HOLSTER)
+near-miss 8HS1KAMKWY10: map: shop on floor 3 offers CLEANSE, LETHALITY, AUTOMATION (Neow: STONE_HUMIDIFIER)
+near-miss SYE67NHCBYV9: map: Neow pickup offers potion SHACKLING_POTION (Neow: LOST_COFFER)
+[30,000 seeds, 88/s] 1 act: 14,960  3 neow: 2,009  4 fight1: 9,947  5 map: 3,064  7 replay: 20
+Stopped at 30,300; run again with the same --state to resume.

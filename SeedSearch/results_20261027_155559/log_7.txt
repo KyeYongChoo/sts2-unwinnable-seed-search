@@ -1,0 +1,33 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+Searching seed sequence 1793087325976 at 0 of 1,000,000,000,000, ascension 10. Matches go to C:\Users\chook\Desktop\Searching for an Unwinnable Seed\SeedSearch\results\matches_7.txt
+  note: LEAFY_POULTICE's pickup effect was skipped (needs the engine)
+  note: LEAD_PAPERWEIGHT's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEOWS_BONES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: SCROLL_BOXES's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECISE_SCISSORS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: NEW_LEAF's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: HEFTY_TABLET's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: POMANDER's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+  note: PRECARIOUS_SHEARS's pickup stopped at a UI call (choice screen, HP bar, ...); anything after it was skipped
+near-miss YZEKBCH36KLJ: map: fight on floor 5 (SLIMES_WEAK) offers REAVE (Neow: NUTRITIOUS_OYSTER)
+near-miss XNE728HZKKCH: map: "?" on floor 3 becomes event TABLET_OF_TRUTH (Neow: BOOMING_CONCH)
+near-miss VVR946R6HDUW: map: fight on floor 3 (NIBBITS_WEAK) offers BONE_SHARDS (Neow: LAVA_ROCK)
+near-miss AKEZ89HURR5Q: map: fight on floor 5 (SLIMES_WEAK) offers DRAIN_POWER (Neow: LEAD_PAPERWEIGHT)
+near-miss 183HKEL5BF9R: map: fight on floor 6 (FOGMOG_NORMAL) offers potion POWER_POTION (Neow: FISHING_ROD)
+[10,000 seeds, 81/s] 1 act: 4,917  3 neow: 661  4 fight1: 3,385  5 map: 1,032  7 replay: 5
+near-miss FERQ5R0MVZEA: map: fight on floor 4 (SLIMES_WEAK) offers REAVE (Neow: GOLDEN_PEARL)
+near-miss 6R24YYVTHUKT: map: fight on floor 3 (NIBBITS_WEAK) offers DRAIN_POWER (Neow: SMALL_CAPSULE)
+near-miss N4PB79SCSF72: map: "?" on floor 3 depends on gold/HP (next event would be MORPHIC_GROVE) (Neow: LAVA_ROCK)
+near-miss D3J9ARF4JSG7: map: "?" on floor 3 becomes event AROMA_OF_CHAOS (Neow: LEAD_PAPERWEIGHT)
+near-miss V9FU2QSRP4U3: map: shop on floor 3 offers AUTOMATION (Neow: NEOWS_TALISMAN)
+near-miss XH678QWLWXAK: map: "?" on floor 5 depends on gold/HP (next event would be UNREST_SITE) (Neow: LEAD_PAPERWEIGHT)
+near-miss AFJL27HKA4QY: map: fight on floor 3 (FUZZY_WURM_CRAWLER_WEAK) offers POKE, DEFILE (Neow: FISHING_ROD)
+[20,000 seeds, 86/s] 1 act: 9,941  3 neow: 1,325  4 fight1: 6,694  5 map: 2,028  7 replay: 12
+near-miss A9BXUKCHJN60: map: fight on floor 3 (NIBBITS_WEAK) offers REAP (Neow: KALEIDOSCOPE)
+near-miss T13BTB6FX6MG: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers REAP (Neow: NUTRITIOUS_OYSTER)
+near-miss SVK3JH6YJZ11: map: "?" on floor 4 depends on gold/HP (next event would be THE_LEGENDS_WERE_TRUE) (Neow: FISHING_ROD)
+near-miss AB4WJ9YFB9T2: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers DEFILE, DRAIN_POWER (Neow: SMALL_CAPSULE)
+near-miss H4YXRJFQML23: map: fight on floor 3 (SLIMES_WEAK) offers POKE, REAP (Neow: FISHING_ROD)
+near-miss 9MY3M4EXD9ML: map: fight on floor 3 (SHRINKER_BEETLE_WEAK) offers DEFILE (Neow: ARCANE_SCROLL)
+[30,000 seeds, 87/s] 1 act: 14,928  3 neow: 1,978  4 fight1: 9,956  5 map: 3,120  7 replay: 18
+Stopped at 30,000; run again with the same --state to resume.
