@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- The installed game's managed assemblies. Override with: dotnet build -p:GameDir="D:\...\data_sts2_windows_x86_64" -->
+    <GameDir Condition="'$(GameDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64</GameDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="sts2"><HintPath>$(GameDir)\sts2.dll</HintPath></Reference>
+    <Reference Include="GodotSharp"><HintPath>$(GameDir)\GodotSharp.dll</HintPath></Reference>
+    <Reference Include="0Harmony"><HintPath>$(GameDir)\0Harmony.dll</HintPath></Reference>
+    <Reference Include="SmartFormat"><HintPath>$(GameDir)\SmartFormat.dll</HintPath></Reference>
+    <Reference Include="SmartFormat.ZString"><HintPath>$(GameDir)\SmartFormat.ZString.dll</HintPath></Reference>
+    <Reference Include="Sentry"><HintPath>$(GameDir)\Sentry.dll</HintPath></Reference>
+    <Reference Include="Steamworks.NET"><HintPath>$(GameDir)\Steamworks.NET.dll</HintPath></Reference>
+    <Reference Include="MonoMod.Backports"><HintPath>$(GameDir)\MonoMod.Backports.dll</HintPath></Reference>
+    <Reference Include="MonoMod.ILHelpers"><HintPath>$(GameDir)\MonoMod.ILHelpers.dll</HintPath></Reference>
+    <Reference Include="JetBrains.Annotations"><HintPath>$(GameDir)\JetBrains.Annotations.dll</HintPath></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
