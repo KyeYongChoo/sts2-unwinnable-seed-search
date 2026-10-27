@@ -26,7 +26,11 @@ only weak cards, relics and potions on the way, as evidence that an unwinnable s
   Routes with the same room-type signature replay identically and are deduplicated.
 - `FastPruning.cs`: exact DFS replacement for `MapPathPruning.FindMatchingSegments`. Any change must pass
   `SeedSearch validatemap --count 300` with 0 mismatches.
-- `Program.cs`: CLI, config (validated against ModelDb IDs), funnel reporting.
+- `Program.cs`: CLI, config (validated against ModelDb IDs), funnel reporting, resumable `search`.
+- `WorkerState.cs`: a worker's saved progress (seed-sequence RNG state, seeds checked, funnel); resume is exact.
+- `Server.cs` + `wwwroot/index.html`: `serve` web UI (HttpListener, no dependencies). Workers are detached
+  processes (`cmd /c ... >> log`) coordinated only through `results/` files: `state_N.json`, `STOP`, `search.json`,
+  `matches_N.txt`, `near_N.txt`. `run_search.ps1` uses the same files.
 - Filter order is cheapest first: act → first elite → Neow → first fight → map (expensive) → full replay.
 
 ## Game facts learned from the code

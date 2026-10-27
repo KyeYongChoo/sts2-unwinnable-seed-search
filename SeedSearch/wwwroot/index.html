@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seed Search</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --text: #1d1c1a; --muted: #6b6862; --line: #e3e0d9;
+    --accent: #7a4fd6; --accent-text: #ffffff; --ok: #1f8a5b; --warn: #b7791f; --bad: #c2413b;
+    --chip: #efeaf9; --chip-text: #4b2fa0; --code: #f1efea; --bar: #e9e5f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141316; --panel: #1d1b20; --text: #ece9f1; --muted: #9a95a3; --line: #2e2b33;
+      --accent: #9d7bf0; --accent-text: #141316; --ok: #45c08a; --warn: #e0a94a; --bad: #ef6b63;
+      --chip: #2c2540; --chip-text: #cdbcff; --code: #18161b; --bar: #2a2536;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; }
+  header h1 { font-size: 18px; margin: 0; font-weight: 650; }
+  .pill { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--code); color: var(--muted); }
+  .pill.on { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+  .pill.stopping { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .stat { color: var(--muted); }
+  .stat b { color: var(--text); font-variant-numeric: tabular-nums; }
+  main { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; padding: 16px 24px 48px; max-width: 1500px; margin: 0 auto; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+  section.wide { grid-column: 1 / -1; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 12px; font-weight: 650; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--text); padding: 7px 14px; border-radius: 7px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button.danger { color: var(--bad); }
+  button:disabled { opacity: .45; cursor: default; }
+  input, select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .row label { color: var(--muted); }
+  .note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+  .warn { color: var(--warn); }
+  .err { color: var(--bad); white-space: pre-wrap; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  .funnel { display: grid; gap: 6px; }
+  .funnel .f { display: grid; grid-template-columns: 130px 1fr 90px; gap: 10px; align-items: center; }
+  .funnel .track { height: 10px; background: var(--bar); border-radius: 5px; overflow: hidden; }
+  .funnel .fill { height: 100%; background: var(--accent); }
+  .funnel .n { text-align: right; font-variant-numeric: tabular-nums; }
+  details { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; background: var(--bg); }
+  summary { cursor: pointer; padding: 8px 10px; font-weight: 600; }
+  pre { margin: 0; padding: 10px; background: var(--code); border-radius: 0 0 8px 8px; overflow: auto; max-height: 460px; font: 12px/1.4 ui-monospace, Consolas, monospace; white-space: pre; }
+  pre.out { border-radius: 8px; max-height: 620px; }
+  .mono { font-family: ui-monospace, Consolas, monospace; }
+  .scroll { max-height: 360px; overflow: auto; }
+  .empty { color: var(--muted); font-style: italic; }
+  .field { margin-bottom: 16px; }
+  .field > .label { font-weight: 600; margin-bottom: 4px; }
+  .field > .help { color: var(--muted); font-size: 12.5px; margin-bottom: 6px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; max-height: 190px; overflow: auto; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; background: var(--chip); color: var(--chip-text); border-radius: 999px; padding: 2px 4px 2px 10px; font-size: 12.5px; }
+  .chip button { border: 0; background: transparent; color: inherit; padding: 0 6px; font-size: 14px; line-height: 1; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 24px; }
+  .count { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .savebar { position: sticky; bottom: 0; background: var(--panel); padding-top: 10px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
+  @media (max-width: 520px) { main { grid-template-columns: 1fr; padding: 12px; } header { padding: 12px; } .funnel .f { grid-template-columns: 90px 1fr 70px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Seed Search</h1>
+  <span id="state" class="pill">…</span>
+  <span class="stat">Seeds checked <b id="checked">0</b></span>
+  <span class="stat">Speed <b id="rate">0</b>/s</span>
+  <span class="stat">Matches <b id="matchCount">0</b></span>
+</header>
+<main>
+  <section>
+    <h2>Search</h2>
+    <div class="row">
+      <label for="procs">Processes</label>
+      <input id="procs" type="number" min="1" max="64" style="width:72px">
+      <label for="prio">Priority</label>
+      <select id="prio">
+        <option value="BelowNormal">Below normal (PC stays usable)</option>
+        <option value="Idle">Idle (only spare CPU)</option>
+        <option value="Normal">Normal (full speed)</option>
+      </select>
+    </div>
+    <div class="row">
+      <button class="primary" id="btnStart">Start / Resume</button>
+      <button id="btnStop">Stop</button>
+      <button id="btnNew">New search…</button>
+      <button class="danger" id="btnKill" title="Force-quit workers; they lose up to 3 s of progress">Force quit</button>
+    </div>
+    <p class="note">Stop saves progress; Start / Resume continues each worker's seed sequence exactly where it left off. New search moves the current results to a dated folder and starts fresh sequences.</p>
+    <p class="note warn" id="configWarn" hidden>config.json changed since these workers started. Already-checked seeds were checked with the old filters; start a New search to recheck everything.</p>
+    <p class="err" id="ctrlErr"></p>
+  </section>
+
+  <section>
+    <h2>Funnel</h2>
+    <div class="funnel" id="funnel"><span class="empty">No progress yet.</span></div>
+    <p class="note">Where seeds fail, in filter order. "7 replay" seeds had a forced map and failed a card, relic or potion check on some route.</p>
+  </section>
+
+  <section class="wide">
+    <h2>Matches</h2>
+    <div id="matches"><span class="empty">No matches yet.</span></div>
+  </section>
+
+  <section>
+    <h2>Workers</h2>
+    <div class="scroll">
+      <table><thead><tr><th>#</th><th>Status</th><th>Checked</th><th>Speed</th><th>Last update</th></tr></thead><tbody id="workers"></tbody></table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Near-misses <span class="count">forced map, failed in replay</span></h2>
+    <div class="scroll">
+      <table><thead><tr><th>Seed</th><th>Why it failed</th></tr></thead><tbody id="near"></tbody></table>
+    </div>
+  </section>
+
+  <section class="wide">
+    <h2>Inspect a seed</h2>
+    <div class="row">
+      <input id="seedIn" class="mono" placeholder="e.g. V0ZRJNLYX2BN" style="width:200px">
+      <button id="btnDescribe">Describe</button>
+      <span class="note" style="margin:0">Map, Neow, rewards, every route replay, and whether it passes the current config.</span>
+    </div>
+    <pre class="out" id="describeOut" hidden></pre>
+  </section>
+
+  <section class="wide">
+    <h2>Filters (config.json)</h2>
+    <div id="cfg"><span class="empty">Loading…</span></div>
+    <div class="savebar">
+      <button class="primary" id="btnSave">Save config</button>
+      <button id="btnReload">Discard changes</button>
+      <span id="saveMsg" class="note" style="margin:0"></span>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString();
+let catalog = null, config = null, lastStatus = null;
+
+async function api(path, body) {
+  const opts = body === undefined ? {} : { method: 'POST', body: JSON.stringify(body) };
+  const r = await fetch(path, opts);
+  const type = r.headers.get('content-type') || '';
+  return type.includes('json') ? r.json() : r.text();
+}
+
+// ---------- status ----------
+async function refresh() {
+  let s;
+  try { s = await api('/api/status'); } catch { $('state').textContent = 'UI server offline'; return; }
+  lastStatus = s;
+  const st = $('state');
+  st.className = 'pill' + (s.running ? (s.stopRequested ? ' stopping' : ' on') : '');
+  st.textContent = s.running ? (s.stopRequested ? `Stopping (${s.running} running)` : `Running · ${s.running} workers`) : 'Stopped';
+  $('checked').textContent = fmt(s.totals.checked);
+  $('rate').textContent = fmt(s.totals.rate);
+  $('matchCount').textContent = s.matches.length;
+  if (!$('procs').value) $('procs').value = s.cores;
+  $('configWarn').hidden = !s.configChanged;
+  $('btnNew').disabled = s.running > 0;
+  $('btnStop').disabled = s.running === 0 || s.stopRequested;
+
+  const f = s.totals.funnel, total = s.totals.checked || 1;
+  const keys = Object.keys(f);
+  $('funnel').innerHTML = keys.length ? keys.map(k => `
+    <div class="f"><span>${k}</span><div class="track"><div class="fill" style="width:${(100 * f[k] / total).toFixed(2)}%"></div></div><span class="n">${fmt(f[k])}</span></div>`).join('')
+    : '<span class="empty">No progress yet.</span>';
+
+  $('workers').innerHTML = s.workers.length ? s.workers.map(w => `
+    <tr><td>${w.index}</td><td>${w.running ? '<span style="color:var(--ok)">running</span>' : (w.finished ? 'finished' : 'paused')}</td>
+    <td>${fmt(w.checked)}</td><td>${w.running ? fmt(w.rate) + '/s' : '–'}</td><td>${new Date(w.updated).toLocaleTimeString()}</td></tr>`).join('')
+    : '<tr><td colspan="5" class="empty">No workers yet. Press Start.</td></tr>';
+
+  $('near').innerHTML = s.nearMisses.length ? s.nearMisses.map(n => `
+    <tr><td class="mono"><a href="#" data-seed="${n.seed}">${n.seed}</a></td><td>${escapeHtml(n.reason)}</td></tr>`).join('')
+    : '<tr><td colspan="2" class="empty">None yet.</td></tr>';
+
+  const open = new Set([...document.querySelectorAll('#matches details[open]')].map(d => d.dataset.seed));
+  $('matches').innerHTML = s.matches.length ? s.matches.map(m => `
+    <details data-seed="${m.seed}" ${open.has(m.seed) ? 'open' : ''}><summary class="mono">${m.seed} <span class="count">${escapeHtml(m.text.split('\n')[0].replace(/^MATCH \S+\s*/, ''))}</span></summary><pre>${escapeHtml(m.text)}</pre></details>`).join('')
+    : '<span class="empty">No matches yet.</span>';
+}
+
+function escapeHtml(t) { return t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
+
+// ---------- controls ----------
+async function control(path, body) {
+  $('ctrlErr').textContent = '';
+  const r = await api(path, body);
+  if (r && r.ok === false) $('ctrlErr').textContent = r.error;
+  refresh();
+}
+const startBody = () => ({ processes: parseInt($('procs').value) || 1, priority: $('prio').value });
+$('btnStart').onclick = () => control('/api/start', startBody());
+$('btnStop').onclick = () => control('/api/stop', {});
+$('btnKill').onclick = () => confirm('Force-quit all workers? They lose up to 3 seconds of progress.') && control('/api/kill', {});
+$('btnNew').onclick = () => confirm('Start a new search? Current results are moved to a dated results_… folder.') && control('/api/new', startBody());
+
+// ---------- describe ----------
+async function describe(seed) {
+  $('seedIn').value = seed;
+  const out = $('describeOut');
+  out.hidden = false;
+  out.textContent = 'Working…';
+  out.textContent = await api('/api/describe?seed=' + encodeURIComponent(seed));
+  out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+$('btnDescribe').onclick = () => describe($('seedIn').value.trim());
+$('seedIn').onkeydown = e => { if (e.key === 'Enter') describe($('seedIn').value.trim()); };
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-seed]');
+  if (a) { e.preventDefault(); describe(a.dataset.seed); }
+});
+
+// ---------- config editor ----------
+const FIELDS = [
+  { key: 'ascension', label: 'Ascension', type: 'number', min: 0, max: 10, help: 'A1+ adds elites to the map, which makes forced elites much more common.' },
+  { key: 'act1', label: 'Act 1', type: 'select', from: 'acts' },
+  { key: 'firstElite', label: 'First elite', type: 'select', from: 'elites', any: true, help: 'The elite every route is forced into. "Any" lists which one it is.' },
+  { key: 'latestEliteRow', label: 'Latest elite row', type: 'number', min: 6, max: 14, help: 'Floor = row + 1. Row 9 is the chest row, row 15 the rest sites before the boss.' },
+  { key: 'extraRoomsBeforeElite', label: 'Extra rooms allowed before the elite', type: 'list', from: 'rooms', help: 'Besides fights, "?" rooms and the chest.' },
+  { key: 'allowedEvents', label: 'Allowed events', type: 'list', from: 'events', help: 'What a "?" room may turn into on the way.' },
+  { key: 'allowedCards', label: 'Allowed cards', type: 'list', from: 'cards', help: 'Every card offered on the way (fights, events, shops) must be on this list. Empty disables the check.' },
+  { key: 'allowedRelics', label: 'Allowed relics', type: 'list', from: 'relics', help: 'Relics a chest, shop or This or That may offer. Empty allows any.' },
+  { key: 'forbiddenPotions', label: 'Forbidden potions', type: 'list', from: 'potions', help: 'May not be obtainable on the way.' },
+  { key: 'allowedNeowRelics', label: 'Allowed Neow relics', type: 'list', from: 'relics', help: 'Empty allows any Neow option (each is replayed).' },
+  { key: 'forbiddenNeowRelics', label: 'Forbidden Neow relics', type: 'list', from: 'relics', help: 'A seed fails if Neow offers any of these.' },
+];
+
+function catalogItems(from) {
+  const items = catalog[from];
+  return items.map(x => typeof x === 'string' ? { id: x, name: x, group: '' } : x);
+}
+
+function renderConfig() {
+  const cols = { simple: [], lists: [] };
+  for (const f of FIELDS) {
+    const el = document.createElement('div');
+    el.className = 'field';
+    el.innerHTML = `<div class="label">${f.label}${f.type === 'list' ? ` <span class="count">(${config[f.key].length})</span>` : ''}</div>${f.help ? `<div class="help">${f.help}</div>` : ''}`;
+    if (f.type === 'number') {
+      const inp = document.createElement('input');
+      Object.assign(inp, { type: 'number', min: f.min, max: f.max, value: config[f.key] });
+      inp.style.width = '90px';
+      inp.oninput = () => config[f.key] = parseInt(inp.value) || 0;
+      el.append(inp);
+      cols.simple.push(el);
+    } else if (f.type === 'select') {
+      const sel = document.createElement('select');
+      if (f.any) sel.add(new Option('Any', ''));
+      for (const it of catalogItems(f.from)) sel.add(new Option(it.group ? `${it.name} (${it.group})` : it.name, it.id));
+      sel.value = config[f.key];
+      sel.onchange = () => config[f.key] = sel.value;
+      el.append(sel);
+      cols.simple.push(el);
+    } else {
+      const items = catalogItems(f.from), byId = Object.fromEntries(items.map(i => [i.id, i]));
+      const chips = document.createElement('div');
+      chips.className = 'chips';
+      for (const id of config[f.key]) {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = byId[id] ? byId[id].name : id;
+        chip.title = id;
+        const x = document.createElement('button');
+        x.textContent = '×';
+        x.title = 'Remove';
+        x.onclick = () => { config[f.key] = config[f.key].filter(v => v !== id); renderConfig(); };
+        chip.append(x);
+        chips.append(chip);
+      }
+      const sel = document.createElement('select');
+      sel.add(new Option(`Add ${f.label.toLowerCase().replace(/^(allowed|forbidden) /, '')}…`, ''));
+      const groups = {};
+      for (const it of items) if (!config[f.key].includes(it.id)) (groups[it.group] ??= []).push(it);
+      for (const [g, list] of Object.entries(groups)) {
+        const og = document.createElement('optgroup');
+        og.label = g || 'Options';
+        for (const it of list) og.append(new Option(it.name, it.id));
+        sel.append(og);
+      }
+      sel.onchange = () => { if (sel.value) { config[f.key].push(sel.value); renderConfig(); } };
+      el.append(chips, sel);
+      if (config[f.key].length) {
+        const clr = document.createElement('button');
+        clr.textContent = 'Clear';
+        clr.style.marginLeft = '8px';
+        clr.onclick = () => confirm(`Clear ${f.label.toLowerCase()}?`) && (config[f.key] = [], renderConfig());
+        el.append(clr);
+      }
+      cols.lists.push(el);
+    }
+  }
+  const root = $('cfg');
+  root.innerHTML = '';
+  const top = document.createElement('div');
+  top.className = 'grid2';
+  top.append(...cols.simple);
+  const lists = document.createElement('div');
+  lists.className = 'grid2';
+  lists.append(...cols.lists);
+  root.append(top, lists);
+}
+
+async function loadConfig() {
+  config = await api('/api/config');
+  for (const f of FIELDS) if (f.type === 'list') config[f.key] ??= [];
+  renderConfig();
+  $('saveMsg').textContent = '';
+}
+$('btnReload').onclick = loadConfig;
+$('btnSave').onclick = async () => {
+  const r = await api('/api/config', config);
+  $('saveMsg').className = r.ok ? 'note' : 'note err';
+  $('saveMsg').textContent = r.ok
+    ? 'Saved. Running workers keep their old filters until restarted; seeds already checked are not rechecked.'
+    : r.error;
+  refresh();
+};
+
+(async () => {
+  catalog = await api('/api/catalog');
+  await loadConfig();
+  refresh();
+  setInterval(refresh, 2000);
+})();
+</script>
+</body>
+</html>

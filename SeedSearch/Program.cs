@@ -38,6 +38,9 @@ switch (opts.GetValueOrDefault("command", "help"))
     case "cards":
         Report.ListCards();
         break;
+    case "serve":
+        Server.Run(opts);
+        break;
     case "validatemap":
     {
         // Builds each map with the game's own pruning and with FastPruning, and compares every point and edge.
@@ -88,6 +91,7 @@ switch (opts.GetValueOrDefault("command", "help"))
                                                 random seeds; --from makes the seed sequence reproducible, so run
                                                 several processes with different --from values to use every core
               SeedSearch stats [--count N] [--maps N]   pass rate of each filter on its own
+              SeedSearch serve [--port 5057]   local web UI: start/stop/resume searches, results, seed inspector, config editor
               SeedSearch cards                  Necrobinder cards that can appear in combat card rewards
               SeedSearch validatemap [--count N]   check the fast map pruning against the game's own
             Options: --config path.json  --ascension N  --slowmap (use the game's own map pruning)
@@ -120,6 +124,10 @@ class Config
     public List<string> allowedCards { get; set; } = new();
 
     public static Config Load(string path) => JsonSerializer.Deserialize<Config>(File.ReadAllText(path))!;
+
+    /// <summary>Short fingerprint of the filters, so a resumed search can tell the config changed under it.</summary>
+    public string Hash() =>
+        Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(this))))[..12];
 
     /// <summary>Catches typos: every ID in the config must exist in the game.</summary>
     public void Validate()
@@ -201,18 +209,41 @@ static class Search
         return new(true, null, neow, analysis);
     }
 
+    /// <summary>
+    /// Searches random seeds from a reproducible sequence. With --state, progress (the sequence's RNG position, seeds
+    /// checked, funnel) is saved every few seconds and a restart resumes where it left off. With --stop, the search
+    /// saves and exits when that file appears.
+    /// </summary>
     public static void Run(Config config, Dictionary<string, string> opts)
     {
         long count = long.Parse(opts.GetValueOrDefault("count", "100000"));
-        ulong from = opts.TryGetValue("from", out var f) ? ulong.Parse(f) : (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var outPath = opts.GetValueOrDefault("out", "results.txt");
-        var seedRng = new Rng(from);
-        var funnel = new SortedDictionary<string, long>();
+        var statePath = opts.GetValueOrDefault("state");
+        var stopPath = opts.GetValueOrDefault("stop");
+        var nearPath = opts.GetValueOrDefault("near");
+        var saved = statePath != null && File.Exists(statePath) ? JsonSerializer.Deserialize<WorkerState>(File.ReadAllText(statePath)) : null;
+        ulong from = saved?.From ?? (opts.TryGetValue("from", out var f) ? ulong.Parse(f) : (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        var seedRng = saved != null ? new Rng(saved.ToRng()) : new Rng(from);
+        long start = saved?.Checked ?? 0;
+        var funnel = new SortedDictionary<string, long>(saved?.Funnel ?? new());
+        string configHash = config.Hash();
         var sw = Stopwatch.StartNew();
-        Console.WriteLine($"Searching {count:N0} random seeds (--from {from}), ascension {config.ascension}. Matches go to {Path.GetFullPath(outPath)}");
+        var lastSave = sw.Elapsed;
+        long i = start;
+        Console.WriteLine($"{(saved != null ? "Resuming" : "Searching")} seed sequence {from} at {start:N0} of {count:N0}, ascension {config.ascension}. Matches go to {Path.GetFullPath(outPath)}");
 
-        for (long i = 1; i <= count; i++)
+        void Save(bool finished)
         {
+            if (statePath == null) return;
+            var state = WorkerState.Capture(from, i, count, seedRng, funnel, (i - start) / Math.Max(sw.Elapsed.TotalSeconds, 0.001), finished, configHash);
+            File.WriteAllText(statePath + ".tmp", JsonSerializer.Serialize(state));
+            File.Move(statePath + ".tmp", statePath, overwrite: true);
+        }
+
+        Save(false);
+        while (i < count)
+        {
+            i++;
             string seed = SeedHelper.GetRandomSeed(seedRng);
             Verdict v;
             try
@@ -233,10 +264,29 @@ static class Search
                 File.AppendAllText(outPath, text + Environment.NewLine);
             }
             else if (stage == "7 replay")
+            {
                 Console.WriteLine($"near-miss {seed}: {v.FailedAt}");
+                if (nearPath != null)
+                    File.AppendAllText(nearPath, $"{seed}\t{v.FailedAt}{Environment.NewLine}");
+            }
             if (i % 10000 == 0 || i == count)
-                Console.WriteLine($"[{i:N0} seeds, {i / sw.Elapsed.TotalSeconds:N0}/s] " + string.Join("  ", funnel.Select(kv => $"{kv.Key}: {kv.Value:N0}")));
+                Console.WriteLine($"[{i:N0} seeds, {(i - start) / sw.Elapsed.TotalSeconds:N0}/s] " + string.Join("  ", funnel.Select(kv => $"{kv.Key}: {kv.Value:N0}")));
+            if (i % 25 == 0)
+            {
+                if (stopPath != null && File.Exists(stopPath))
+                {
+                    Save(false);
+                    Console.WriteLine($"Stopped at {i:N0}; run again with the same --state to resume.");
+                    return;
+                }
+                if ((sw.Elapsed - lastSave).TotalSeconds >= 3)
+                {
+                    Save(false);
+                    lastSave = sw.Elapsed;
+                }
+            }
         }
+        Save(true);
     }
 
     // Groups failure reasons into funnel stages in filter order.

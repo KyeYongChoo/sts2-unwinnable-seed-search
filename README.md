@@ -51,29 +51,51 @@ dotnet build -c Release -p:GameDir="D:\SteamLibrary\steamapps\common\Slay the Sp
 
 ## Use
 
+### Web UI (easiest)
+
+```
+cd SeedSearch
+dotnet bin\Release\net9.0\SeedSearch.dll serve
+```
+
+This opens `http://localhost:5057/` with:
+
+- **Start / Resume** and **Stop**: workers save their progress, and resume continues each seed sequence exactly where
+  it stopped. Choose the number of processes and the priority (Below normal keeps the PC usable).
+- **New search**: moves the current results to a dated `results_...` folder and starts fresh sequences.
+- Live progress: seeds checked, speed, the filter funnel and each worker's status.
+- **Matches** with their full route, card, potion and relic breakdown, and recent **near-misses**.
+- **Inspect a seed**: map, Neow options, rewards, every route replay, and whether it passes the current config.
+- **Filters editor**: drop-down lists for cards, relics, potions and events, saved to `config.json` and validated.
+
+Workers are separate processes that write to `SeedSearch\results\`, so they keep running if you close the page or
+the UI server, and the UI picks them up again when reopened.
+
+### Command line
+
 From the `SeedSearch` folder:
 
 | Command | What it does |
 |---|---|
 | `dotnet bin\Release\net9.0\SeedSearch.dll describe <SEED>` | Map, encounters, Neow options, rewards per Neow pick, and every route replay |
 | `dotnet bin\Release\net9.0\SeedSearch.dll check <SEED>` | Runs every filter in `config.json` against one seed |
-| `dotnet bin\Release\net9.0\SeedSearch.dll search --count N --from N` | Searches random seeds; `--from` makes the sequence reproducible |
+| `dotnet bin\Release\net9.0\SeedSearch.dll search --count N --from N` | Searches random seeds; `--from` makes the sequence reproducible. Add `--state file.json` to save/resume progress and `--stop file` to stop when that file appears |
 | `dotnet bin\Release\net9.0\SeedSearch.dll stats` | Pass rate of each filter on its own |
 | `dotnet bin\Release\net9.0\SeedSearch.dll cards` | Necrobinder cards that can appear in combat rewards |
 | `dotnet bin\Release\net9.0\SeedSearch.dll validatemap` | Checks the fast map pruning against the game's own |
 
 Options: `--config path.json`, `--ascension N`, `--slowmap` (use the game's own map pruning).
 
-To search on every core (low priority by default, so the PC stays usable):
+To search on every core without the UI (uses the same `results\` files, so it resumes the UI's search and vice versa):
 
 ```
-.\run_search.ps1                  # one search per core, BelowNormal priority
-.\run_search.ps1 -Processes 6     # leave two cores free
-.\run_search.ps1 -Priority Normal # full speed when idle
-.\run_search.ps1 -FromBase 2000   # a fresh set of seed sequences
+.\run_search.ps1                   # start, or resume where the workers stopped
+.\run_search.ps1 -Stop             # stop; workers save progress and exit within a few seconds
+.\run_search.ps1 -Processes 6      # leave two cores free
+.\run_search.ps1 -Priority Normal  # full speed when idle (default BelowNormal)
 ```
 
-Matches and logs go to `SeedSearch\results\`. Stop everything with `Get-Process dotnet | Stop-Process`.
+To start a fresh search from the command line, stop it and rename or delete `results\`.
 
 ## Configuration (`SeedSearch/config.json`)
 
