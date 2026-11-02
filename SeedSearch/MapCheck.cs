@@ -35,6 +35,10 @@ static class MapCheck
     };
 
     static readonly AccessTools.FieldRef<ActModel, RoomSet> _rooms = AccessTools.FieldRefAccess<ActModel, RoomSet>("_rooms");
+    static readonly Func<RelicModel[]> _trashHeapRelics =
+        AccessTools.MethodDelegate<Func<RelicModel[]>>(AccessTools.PropertyGetter(typeof(MegaCrit.Sts2.Core.Models.Events.TrashHeap), "Relics"));
+    static readonly Func<CardModel[]> _trashHeapCards =
+        AccessTools.MethodDelegate<Func<CardModel[]>>(AccessTools.PropertyGetter(typeof(MegaCrit.Sts2.Core.Models.Events.TrashHeap), "Cards"));
 
     public record Room(int Floor, string What, List<string>? Cards = null, string? Potion = null, string? Relic = null, string? Detail = null)
     {
@@ -150,8 +154,7 @@ static class MapCheck
         {
             var list = cards.ToList();
             SeenCards.AddRange(list);
-            if (Config.allowedCards.Count == 0) return null;
-            var bad = list.Where(c => !Config.allowedCards.Contains(c.TrimEnd('+'))).Distinct().ToList();
+            var bad = list.Where(c => !Config.CardOk(c)).Distinct().ToList();
             return bad.Count == 0 ? null : $"{where} offers {string.Join(", ", bad)}";
         }
 
@@ -388,7 +391,7 @@ static class MapCheck
                     rng.NextInt(-9, 10); // CalculateVars
                     var replacement = CardFactory.CreateRandomCardForTransform(original, false, rng);
                     results.Add($"{id}->{replacement.Id.Entry}");
-                    if (ctx.Config.allowedCards.Count > 0 && !ctx.Config.allowedCards.Contains(replacement.Id.Entry))
+                    if (!ctx.Config.CardOk(replacement.Id.Entry))
                         return (null, null, $"{where} Hug can turn {id} into {replacement.Id.Entry}");
                 }
                 return ("Hug: " + string.Join(", ", results), null, null);
@@ -436,10 +439,26 @@ static class MapCheck
                 return ($"Rest + fight: {string.Join(", ", fight.Cards)}" + (fight.Potion != null ? $" + potion {fight.Potion}" : ""), null, problem);
             }
 
+            case "TRASH_HEAP":
+            {
+                // Dive In: a relic picked with the event's own RNG. Grab: 100 gold and a colorless card from the same RNG.
+                var rng = EventRng(ctx, ev);
+                if (ctx.Decide($"Trash Heap Dive In on floor {floor}"))
+                {
+                    var heapRelic = rng.NextItem(_trashHeapRelics())!.Id.Entry;
+                    var problem = ctx.BadRelic(heapRelic, where);
+                    if (problem == null)
+                        Sim.Obtain(player, heapRelic);
+                    return ("Dive In: " + heapRelic, heapRelic, problem);
+                }
+                var heapCard = rng.NextItem(_trashHeapCards())!.Id.Entry;
+                return ("Grab: " + heapCard, null, ctx.BadCards(new[] { heapCard }, where));
+            }
+
             default:
                 // Sunken Treasury, Jungle Maze, Byrdonis Nest, Self Help Book, Slippery Bridge, Sunken Statue, Doors of Light
-                // and Dark, Wood Carvings: their choices only use the event's own RNG and give gold, HP, upgrades,
-                // enchantments, removals or fixed cards/relics.
+                // and Dark, Wood Carvings, Abyssal Baths, Spiraling Whirlpool, Waterlogged Scriptorium: their choices only
+                // use the event's own RNG and give gold, HP, upgrades, enchantments, removals or fixed cards/relics.
                 return (null, null, null);
         }
     }
@@ -485,6 +504,12 @@ static class MapCheck
         {
             case "WHISPERING_HOLLOW":
                 return Gold(ctx, 44);
+            case "WATERLOGGED_SCRIPTORIUM":
+                return Gold(ctx, 55);
+            case "ENDLESS_CONVEYOR":
+                return Gold(ctx, 120);
+            case "TRASH_HEAP":
+                return (true, true); // needs more than 5 HP, which depends on damage taken
             case "MORPHIC_GROVE":
                 return Gold(ctx, 100); // also needs 2 transformable cards, which the deck always has this early
             case "LUMINOUS_CHOIR":

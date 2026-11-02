@@ -18,7 +18,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
 
 /// <summary>
-/// Reproduces the start of a singleplayer Necrobinder run by calling the game's own generation code in the same
+/// Reproduces the start of a singleplayer run by calling the game's own generation code in the same
 /// order the game does (NGame.StartNewSingleplayerRun -> RunManager.InitializeNewRun/GenerateRooms/GenerateMap).
 /// Assumes every act, event and relic is unlocked (verified in-game after /unlock all).
 /// </summary>
@@ -30,6 +30,9 @@ static class Sim
         AccessTools.MethodDelegate<Action<RunManager, AscensionManager>>(AccessTools.PropertySetter(typeof(RunManager), nameof(RunManager.AscensionManager)));
 
     public static int Ascension { get; private set; }
+    public static CharacterModel Character { get; private set; } = ModelDb.Character<Necrobinder>();
+
+    public static void SetCharacter(string id) => Character = ModelDb.AllCharacters.First(c => c.Id.Entry == id);
 
     public static void SetAscension(int level)
     {
@@ -62,7 +65,7 @@ static class Sim
     /// skips it here and checks it last via <see cref="Act1Map"/>.</param>
     public static RunState NewRun(string seed, bool allActsRooms = true, bool createMap = false)
     {
-        var player = Player.CreateForNewRun(ModelDb.Character<Necrobinder>(), UnlockState.all, 1uL);
+        var player = Player.CreateForNewRun(Character, UnlockState.all, 1uL);
         var acts = PickActs(seed).Select(a => (ActModel)a.ToMutable()).ToList();
         var state = RunState.CreateForNewRun(new[] { player }, acts, Array.Empty<ModifierModel>(), GameMode.Standard, Ascension, seed);
         _setState(RunManager.Instance, state);

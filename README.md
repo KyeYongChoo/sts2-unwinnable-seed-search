@@ -60,16 +60,22 @@ dotnet bin\Release\net9.0\SeedSearch.dll serve
 
 This opens `http://localhost:5057/` with:
 
+- **Profile tabs** in the header to switch between searches, e.g. Ironclad and Necrobinder. `config.json` pairs with
+  `results\`, and each `config_NAME.json` with `results_NAME\` (create the file to add a tab). A green dot marks the
+  profiles with running workers; each profile starts, stops and resumes on its own.
 - **Start / Resume** and **Stop**: workers save their progress, and resume continues each seed sequence exactly where
   it stopped. Choose the number of processes and the priority (Below normal keeps the PC usable).
 - **New search**: moves the current results to a dated `results_...` folder and starts fresh sequences.
 - Live progress: seeds checked, speed, the filter funnel and each worker's status.
 - **Matches** with their full route, card, potion and relic breakdown, and recent **near-misses**.
+  Tag each match as verified winnable or unwinnable and add a note; tags are saved to `notes.json` in the results
+  folder, which workers never write to.
 - **Inspect a seed**: map, Neow options, rewards, every route replay, and whether it passes the current config.
-- **Filters editor**: drop-down lists for cards, relics, potions and events, saved to `config.json` and validated.
+- **Filters editor**: drop-down lists for cards, relics, potions and events, saved to the profile's config file and
+  validated. The card lists only offer the profile character's cards and colorless ones.
 
-Workers are separate processes that write to `SeedSearch\results\`, so they keep running if you close the page or
-the UI server, and the UI picks them up again when reopened.
+Workers are separate processes that write to the profile's results folder, so they keep running if you close the page
+or the UI server, and the UI picks them up again when reopened.
 
 ### Command line
 
@@ -93,6 +99,8 @@ To search on every core without the UI (uses the same `results\` files, so it re
 .\run_search.ps1 -Stop             # stop; workers save progress and exit within a few seconds
 .\run_search.ps1 -Processes 6      # leave two cores free
 .\run_search.ps1 -Priority Normal  # full speed when idle (default BelowNormal)
+.\run_search.ps1 -Profile necrobinder        # config_necrobinder.json and results_necrobinder\
+.\run_search.ps1 -Profile necrobinder -Stop
 ```
 
 To start a fresh search from the command line, stop it and rename or delete `results\`.
@@ -104,7 +112,8 @@ IDs are the game's internal names (`SEANCE`, `FROZEN_EGG`, ...). Typos are rejec
 | Key | Meaning |
 |---|---|
 | `ascension` | Ascension level. A1+ adds elites to the map, which makes forced elites far more common. |
-| `act1` | Required Act 1 (`OVERGROWTH` or `UNDERDOCKS`). |
+| `character` | Character to play (`NECROBINDER`, `IRONCLAD`, ...). |
+| `act1` | Required Act 1 (`OVERGROWTH` or `UNDERDOCKS`); empty allows either. |
 | `firstElite` | Required first elite of the act (the one routes are forced into). Empty allows any. |
 | `latestEliteRow` | Last map row (floor = row + 1) where the forced elite may be. Row 9 is the chest row, 15 the rest row before the boss. |
 | `allowedEvents` | Events a "?" room may turn into on the way. |
@@ -113,6 +122,7 @@ IDs are the game's internal names (`SEANCE`, `FROZEN_EGG`, ...). Typos are rejec
 | `allowedNeowRelics` / `forbiddenNeowRelics` | Neow restrictions. An empty allow-list allows any option (each is replayed). |
 | `forbiddenPotions` | Potions that may not be obtainable on the way (fights, events, shops, Neow pickups). |
 | `allowedCards` | Every card offered on the way (fights, events, shops) must be on this list. Empty disables the filter. |
+| `forbiddenCards` | No card offered on the way may be on this list. |
 
 ## Findings so far
 

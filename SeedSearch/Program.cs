@@ -16,6 +16,7 @@ var config = Config.Load(opts.GetValueOrDefault("config", File.Exists("config.js
 if (opts.TryGetValue("ascension", out var asc))
     config.ascension = int.Parse(asc);
 Sim.SetAscension(config.ascension);
+Sim.SetCharacter(config.character);
 if (!opts.ContainsKey("slowmap"))
     FastPruning.Enable();
 config.Validate();
@@ -169,7 +170,7 @@ switch (opts.GetValueOrDefault("command", "help"))
                                                 several processes with different --from values to use every core
               SeedSearch stats [--count N] [--maps N]   pass rate of each filter on its own
               SeedSearch serve [--port 5057]   local web UI: start/stop/resume searches, results, seed inspector, config editor
-              SeedSearch cards                  Necrobinder cards that can appear in combat card rewards
+              SeedSearch cards                  the character's cards that can appear in combat card rewards
               SeedSearch validatemap [--count N]   check the fast map pruning against the game's own
             Options: --config path.json  --ascension N  --slowmap (use the game's own map pruning)
             """);
@@ -179,6 +180,8 @@ switch (opts.GetValueOrDefault("command", "help"))
 class Config
 {
     public int ascension { get; set; }
+    public string character { get; set; } = "NECROBINDER";
+    /// <summary>Required act 1. Empty allows either.</summary>
     public string act1 { get; set; } = "OVERGROWTH";
     /// <summary>The act's first elite (the one every route is forced into). Empty allows any.</summary>
     public string firstElite { get; set; } = "BYGONE_EFFIGY_ELITE";
@@ -199,6 +202,15 @@ class Config
     public List<string> forbiddenPotions { get; set; } = new();
     /// <summary>Every fight before the elite must offer only these cards. Empty disables the card filter.</summary>
     public List<string> allowedCards { get; set; } = new();
+    /// <summary>No fight, event or shop before the elite may offer any of these cards.</summary>
+    public List<string> forbiddenCards { get; set; } = new();
+
+    /// <summary>Whether a card (upgraded or not) passes allowedCards and forbiddenCards.</summary>
+    public bool CardOk(string card)
+    {
+        var id = card.TrimEnd('+');
+        return (allowedCards.Count == 0 || allowedCards.Contains(id)) && !forbiddenCards.Contains(id);
+    }
 
     public static Config Load(string path) => JsonSerializer.Deserialize<Config>(File.ReadAllText(path))!;
 
@@ -215,12 +227,13 @@ class Config
             var known = models.Select(m => m.Id.Entry).ToHashSet();
             problems.AddRange(ids.Where(id => !known.Contains(id)).Select(id => $"unknown {what} {id}"));
         }
-        Check(allowedCards, ModelDb.AllCards, "card");
+        Check(allowedCards.Concat(forbiddenCards), ModelDb.AllCards, "card");
+        Check(new[] { character }, ModelDb.AllCharacters, "character");
         Check(allowedRelics.Concat(allowedNeowRelics).Concat(forbiddenNeowRelics), ModelDb.AllRelics, "relic");
         Check(allowedEvents, ModelDb.AllEvents, "event");
         Check(forbiddenPotions, ModelDb.AllPotions, "potion");
         Check(new[] { firstElite }.Where(e => e != ""), ModelDb.AllEncounters, "encounter");
-        Check(new[] { act1 }, ModelDb.Acts, "act");
+        Check(new[] { act1 }.Where(a => a != ""), ModelDb.Acts, "act");
         if (problems.Count > 0)
             throw new InvalidDataException("config.json: " + string.Join("; ", problems));
     }
@@ -256,7 +269,7 @@ static class Search
     public static Verdict Check(string seed, Config config)
     {
         var act1 = Sim.PickAct1(seed);
-        if (act1.Id.Entry != config.act1)
+        if (config.act1 != "" && act1.Id.Entry != config.act1)
             return new(false, $"act 1 is {act1.Id.Entry}");
 
         var state = Sim.NewRun(seed, allActsRooms: false);
@@ -273,7 +286,7 @@ static class Search
         foreach (var relic in neow)
         {
             var first = Sim.RewardsAfterNeow(seed, relic, 1, includeFirstElite: false)[0];
-            var bad = config.allowedCards.Count == 0 ? new() : first.Cards.Where(c => !config.allowedCards.Contains(c.TrimEnd('+'))).ToList();
+            var bad = first.Cards.Where(c => !config.CardOk(c)).ToList();
             if (first.Potion != null && config.forbiddenPotions.Contains(first.Potion))
                 bad.Add("potion " + first.Potion);
             if (bad.Count > 0)
@@ -314,7 +327,21 @@ static class Search
             if (statePath == null) return;
             var state = WorkerState.Capture(from, i, count, seedRng, funnel, (i - start) / Math.Max(sw.Elapsed.TotalSeconds, 0.001), finished, configHash);
             File.WriteAllText(statePath + ".tmp", JsonSerializer.Serialize(state));
-            File.Move(statePath + ".tmp", statePath, overwrite: true);
+            // The UI reads this file every few seconds, and Windows refuses to replace a file another process has open.
+            // Retry briefly; a skipped periodic save is caught up 3 s later, but the last save must land.
+            for (int attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    File.Move(statePath + ".tmp", statePath, overwrite: true);
+                    return;
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                    if (attempt >= (finished || File.Exists(stopPath ?? "") ? 200 : 20)) { if (finished) throw; return; }
+                    Thread.Sleep(25);
+                }
+            }
         }
 
         Save(false);
@@ -379,8 +406,8 @@ static class Search
     };
 
     /// <summary>
-    /// Measures filters on random seeds, to estimate how rare a full match is. Map structure is sampled on Overgrowth
-    /// seeds only, since replaying "?" rooms needs that seed's own run.
+    /// Measures filters on random seeds, to estimate how rare a full match is. Map structure is sampled on seeds with
+    /// the configured act 1 only, since replaying "?" rooms needs that seed's own run.
     /// </summary>
     public static void Stats(Config config, Dictionary<string, string> opts)
     {
@@ -392,14 +419,14 @@ static class Search
         for (long i = 0; i < count; i++)
         {
             string seed = SeedHelper.GetRandomSeed(seedRng);
-            if (Sim.PickAct1(seed).Id.Entry == config.act1) overgrowth++;
+            if (config.act1 == "" || Sim.PickAct1(seed).Id.Entry == config.act1) overgrowth++;
             var state = Sim.NewRun(seed, allActsRooms: false);
             if (state.Act.PullNextEncounter(RoomType.Elite).Id.Entry == config.firstElite) effigy++;
             var neow = Sim.NeowOptions(state).Select(o => o.Relic?.Id.Entry ?? o.TextKey).ToList();
             if (!neow.Any(config.forbiddenNeowRelics.Contains)) neowOk++;
             var results = Sim.RewardsAfterNeow(seed, null, okThrough.Length - 1, includeFirstElite: false);
             int ok = 0;
-            while (ok < results.Count && results[ok].Cards.All(c => config.allowedCards.Count == 0 || config.allowedCards.Contains(c.TrimEnd('+')))) ok++;
+            while (ok < results.Count && results[ok].Cards.All(config.CardOk)) ok++;
             for (int k = 0; k <= ok; k++) okThrough[k]++;
         }
         Console.WriteLine($"{count:N0} random seeds:");
@@ -410,16 +437,17 @@ static class Search
         for (int k = 1; k < okThrough.Length; k++)
             Console.WriteLine($"    k={k,2}: {okThrough[k]}/{count} = {okThrough[k] / (double)count:P4}");
 
-        var act = ModelDb.Act<Overgrowth>();
         var outcomes = new SortedDictionary<string, int>();
         var fightsHist = new SortedDictionary<int, int>();
         var permissive = JsonSerializer.Deserialize<Config>(JsonSerializer.Serialize(config))!;
         permissive.allowedCards = new();
+        permissive.forbiddenCards = new();
         permissive.allowedRelics = new();
         for (int i = 0; i < mapSamples;)
         {
             string seed = SeedHelper.GetRandomSeed(seedRng);
-            if (Sim.PickAct1(seed).Id.Entry != config.act1) continue;
+            var act = Sim.PickAct1(seed);
+            if (config.act1 != "" && act.Id.Entry != config.act1) continue;
             i++;
             var analysis = MapCheck.Analyze(seed, Sim.Act1Map(seed, act), permissive, new[] { "" });
             string key = analysis.Problem == null ? "FORCED" : System.Text.RegularExpressions.Regex.Replace(analysis.Problem, @"\d+|[A-Z_]{4,}", "#");
@@ -430,7 +458,7 @@ static class Search
                 Console.WriteLine($"    forced: {seed}  {analysis.Routes} distinct routes, {analysis.MinFights}-{analysis.MaxFights} fights before the elite");
             }
         }
-        Console.WriteLine($"  Overgrowth maps ({mapSamples} sampled), ignoring card and relic filters, forced into an elite by floor {config.latestEliteRow + 1}:");
+        Console.WriteLine($"  {(config.act1 == "" ? "Act 1" : config.act1)} maps ({mapSamples} sampled), ignoring card and relic filters, forced into an elite by floor {config.latestEliteRow + 1}:");
         foreach (var (k, v) in outcomes.OrderByDescending(kv => kv.Value))
             Console.WriteLine($"    {v,5}  {k}");
         Console.WriteLine("    most fights before the elite on forced maps: " + string.Join("  ", fightsHist.Select(kv => $"{kv.Key}: {kv.Value}")));
@@ -446,7 +474,7 @@ static class Report
     public static void Describe(string seed, Config config)
     {
         var state = Sim.NewRun(seed, createMap: true);
-        Console.WriteLine($"Seed {seed}  (hash {state.Rng.Seed}, ascension {config.ascension}, Necrobinder)");
+        Console.WriteLine($"Seed {seed}  (hash {state.Rng.Seed}, ascension {config.ascension}, {config.character})");
         Console.WriteLine("Acts: " + string.Join(", ", state.Acts.Select(a => a.Id.Entry)));
         var map = state.Map;
         Console.WriteLine("Act 1 map (game floor = row + 1; M fight, E elite, ? unknown, R rest, $ shop, T treasure, A ancient):");

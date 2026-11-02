@@ -4,16 +4,22 @@
 #   .\run_search.ps1 -Stop             stop all workers (they save progress first)
 #   .\run_search.ps1 -Processes 6      leave two cores free
 #   .\run_search.ps1 -Priority Normal  full speed (default BelowNormal keeps the PC usable)
+#   .\run_search.ps1 -Profile necrobinder   use config_necrobinder.json and results_necrobinder\ (same as the UI's tabs)
 # To start a fresh search, stop it and rename or delete the results folder.
 param(
     [int]$Processes = [Environment]::ProcessorCount,
     [string]$Priority = "BelowNormal",
+    [string]$Profile = "",
+    [string]$Results = "",
     [switch]$Stop
 )
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $exe = Join-Path $here "bin\Release\net9.0\SeedSearch.dll"
-$out = Join-Path $here "results"
+$config = Join-Path $here $(if ($Profile) { "config_$Profile.json" } else { "config.json" })
+if (-not $Results) { $Results = if ($Profile) { "results_$Profile" } else { "results" } }
+if (-not (Test-Path $config)) { throw "No config file $config" }
+$out = Join-Path $here $Results
 $stopFile = Join-Path $out "STOP"
 New-Item -ItemType Directory -Force $out | Out-Null
 
@@ -42,7 +48,7 @@ for ($i = 0; $i -lt $Processes; $i++) {
     }
     $from = $fromBase + $i
     $p = Start-Process dotnet -WorkingDirectory $here -WindowStyle Hidden -PassThru `
-        -ArgumentList "`"$exe`" search --count 1000000000000 --from $from --state `"$state`" --stop `"$stopFile`" --out `"$out\matches_$i.txt`" --near `"$out\near_$i.txt`"" `
+        -ArgumentList "`"$exe`" search --config `"$config`" --count 1000000000000 --from $from --state `"$state`" --stop `"$stopFile`" --out `"$out\matches_$i.txt`" --near `"$out\near_$i.txt`"" `
         -RedirectStandardOutput "$out\log_$i.txt" -RedirectStandardError "$out\err_$i.txt"
     $p.PriorityClass = $Priority
 }

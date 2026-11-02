@@ -64,6 +64,20 @@
   .chip button { border: 0; background: transparent; color: inherit; padding: 0 6px; font-size: 14px; line-height: 1; }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 24px; }
   .count { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .profiles { display: flex; gap: 4px; padding: 3px; background: var(--code); border-radius: 9px; flex-wrap: wrap; }
+  .profiles button { border: 0; background: transparent; padding: 5px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 7px; color: var(--muted); }
+  .profiles button:hover { color: var(--text); }
+  .profiles button.sel { background: var(--panel); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+  .profiles .sub { font-size: 11.5px; color: var(--muted); font-weight: 400; }
+  .profiles .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+  .profiles .dot.on { background: var(--ok); }
+  summary .count { margin-left: 4px; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; margin-left: 6px; }
+  .tag.unwinnable { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+  .tag.winnable { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .tagnote { font-weight: 400; font-size: 12.5px; margin-left: 6px; font-style: italic; }
+  .notebar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 10px; border-top: 1px solid var(--line); }
+  .notebar .noteIn { flex: 1; min-width: 180px; }
   .savebar { position: sticky; bottom: 0; background: var(--panel); padding-top: 10px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
   @media (max-width: 520px) { main { grid-template-columns: 1fr; padding: 12px; } header { padding: 12px; } .funnel .f { grid-template-columns: 90px 1fr 70px; } }
 </style>
@@ -71,6 +85,7 @@
 <body>
 <header>
   <h1>Seed Search</h1>
+  <nav class="profiles" id="profiles" aria-label="Search profile"></nav>
   <span id="state" class="pill">…</span>
   <span class="stat">Seeds checked <b id="checked">0</b></span>
   <span class="stat">Speed <b id="rate">0</b>/s</span>
@@ -96,7 +111,9 @@
       <button class="danger" id="btnKill" title="Force-quit workers; they lose up to 3 s of progress">Force quit</button>
     </div>
     <p class="note">Stop saves progress; Start / Resume continues each worker's seed sequence exactly where it left off. New search moves the current results to a dated folder and starts fresh sequences.</p>
-    <p class="note warn" id="configWarn" hidden>config.json changed since these workers started. Already-checked seeds were checked with the old filters; start a New search to recheck everything.</p>
+    <p class="note" id="profileNote"></p>
+    <p class="note warn" id="configWarn" hidden><span class="cfgName">config.json</span> changed since these workers started. Already-checked seeds were checked with the old filters; start a New search to recheck everything.</p>
+    <p class="note warn" id="otherWarn" hidden></p>
     <p class="err" id="ctrlErr"></p>
   </section>
 
@@ -136,7 +153,7 @@
   </section>
 
   <section class="wide">
-    <h2>Filters (config.json)</h2>
+    <h2>Filters (<span class="cfgName">config.json</span>)</h2>
     <div id="cfg"><span class="empty">Loading…</span></div>
     <div class="savebar">
       <button class="primary" id="btnSave">Save config</button>
@@ -149,26 +166,71 @@
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Math.round(n).toLocaleString();
-let catalog = null, config = null, lastStatus = null;
+let catalog = null, config = null, savedConfig = '', lastStatus = null;
+let profiles = [], profile = null;   // profile: id of the selected search ('' is config.json)
 
+// Every call except the catalog is for the selected profile.
 async function api(path, body) {
   const opts = body === undefined ? {} : { method: 'POST', body: JSON.stringify(body) };
+  if (profile !== null && path !== '/api/catalog' && path !== '/api/profiles')
+    path += (path.includes('?') ? '&' : '?') + 'profile=' + encodeURIComponent(profile);
   const r = await fetch(path, opts);
   const type = r.headers.get('content-type') || '';
   return type.includes('json') ? r.json() : r.text();
 }
 
+// ---------- profiles ----------
+const current = () => profiles.find(p => p.id === profile);
+
+function renderProfiles() {
+  $('profiles').innerHTML = profiles.map(p => `
+    <button data-profile="${escapeHtml(p.id)}" class="${p.id === profile ? 'sel' : ''}" title="${escapeHtml(p.configFile)} → ${escapeHtml(p.resultsDir)}\\${p.running ? ` · ${p.running} workers running` : ''}">
+      <span class="dot${p.running ? ' on' : ''}"></span>${escapeHtml(p.label)}<span class="sub">${p.ascension != null ? 'A' + p.ascension : ''}</span>
+    </button>`).join('');
+  const cur = current(), others = profiles.filter(p => p.id !== profile && p.running);
+  if (cur) {
+    document.querySelectorAll('.cfgName').forEach(e => e.textContent = cur.configFile);
+    $('profileNote').innerHTML = `Profile <b>${escapeHtml(cur.label)}</b>: filters from <span class="mono">${escapeHtml(cur.configFile)}</span>, results in <span class="mono">${escapeHtml(cur.resultsDir)}\\</span>.`;
+    document.title = `${cur.label} · Seed Search`;
+  }
+  $('otherWarn').hidden = !others.length;
+  $('otherWarn').textContent = others.map(p => `${p.label} is also running (${p.running} workers)`).join('; ') + (others.length ? '. Both searches share the CPU.' : '');
+}
+
+async function selectProfile(id) {
+  if (id === profile) return;
+  if (config && JSON.stringify(config) !== savedConfig && !confirm('Discard unsaved filter changes?')) return;
+  profile = id;
+  try { localStorage.setItem('profile', id); } catch {}
+  history.replaceState(null, '', '#' + encodeURIComponent(id));
+  $('describeOut').hidden = true;
+  $('ctrlErr').textContent = '';
+  $('matches').innerHTML = $('funnel').innerHTML = '';
+  matchesShown = null;
+  renderProfiles();
+  await loadConfig();
+  refresh();
+}
+$('profiles').onclick = e => {
+  const b = e.target.closest('button[data-profile]');
+  if (b) selectProfile(b.dataset.profile);
+};
+
 // ---------- status ----------
 async function refresh() {
   let s;
+  const asked = profile;
   try { s = await api('/api/status'); } catch { $('state').textContent = 'UI server offline'; return; }
+  if (asked !== profile) return;   // switched while this was in flight
+  if (typeof s !== 'object') { $('ctrlErr').textContent = s; return; }
   lastStatus = s;
+  profiles = s.profiles;
+  renderProfiles();
   const st = $('state');
   st.className = 'pill' + (s.running ? (s.stopRequested ? ' stopping' : ' on') : '');
   st.textContent = s.running ? (s.stopRequested ? `Stopping (${s.running} running)` : `Running · ${s.running} workers`) : 'Stopped';
   $('checked').textContent = fmt(s.totals.checked);
   $('rate').textContent = fmt(s.totals.rate);
-  $('matchCount').textContent = s.matches.length;
   if (!$('procs').value) $('procs').value = s.cores;
   $('configWarn').hidden = !s.configChanged;
   $('btnNew').disabled = s.running > 0;
@@ -189,11 +251,50 @@ async function refresh() {
     <tr><td class="mono"><a href="#" data-seed="${n.seed}">${n.seed}</a></td><td>${escapeHtml(n.reason)}</td></tr>`).join('')
     : '<tr><td colspan="2" class="empty">None yet.</td></tr>';
 
+  renderMatches(s.matches);
+}
+
+// ---------- matches and their verified tags ----------
+const VERDICTS = { '': 'Not verified', winnable: 'Verified winnable', unwinnable: 'Verified unwinnable' };
+let matchesShown = null;
+
+function renderMatches(matches) {
+  // Re-render only when something changed, and never under someone typing a note.
+  const key = profile + JSON.stringify(matches);
+  if (key === matchesShown || document.activeElement?.closest?.('#matches .notebar')) return;
+  matchesShown = key;
   const open = new Set([...document.querySelectorAll('#matches details[open]')].map(d => d.dataset.seed));
-  $('matches').innerHTML = s.matches.length ? s.matches.map(m => `
-    <details data-seed="${m.seed}" ${open.has(m.seed) ? 'open' : ''}><summary class="mono">${m.seed} <span class="count">${escapeHtml(m.text.split('\n')[0].replace(/^MATCH \S+\s*/, ''))}</span></summary><pre>${escapeHtml(m.text)}</pre></details>`).join('')
+  const verified = matches.filter(m => m.verdict).length;
+  $('matchCount').textContent = matches.length + (verified ? ` (${verified} verified)` : '');
+  $('matches').innerHTML = matches.length ? matches.map(m => `
+    <details data-seed="${m.seed}" ${open.has(m.seed) ? 'open' : ''}>
+      <summary><span class="mono">${m.seed}</span>
+        ${m.verdict ? `<span class="tag ${m.verdict}">${VERDICTS[m.verdict]}</span>` : ''}
+        ${m.note ? `<span class="tagnote">${escapeHtml(m.note)}</span>` : ''}
+        <span class="count mono">${escapeHtml(m.text.split('\n')[0].replace(/^MATCH \S+\s*/, ''))}</span></summary>
+      <div class="notebar" data-seed="${m.seed}">
+        <select class="verdict" aria-label="Verified tag">${Object.entries(VERDICTS).map(([v, t]) => `<option value="${v}" ${v === m.verdict ? 'selected' : ''}>${t}</option>`).join('')}</select>
+        <input class="noteIn" placeholder="Note, e.g. won with Kaleidoscope route" value="${escapeHtml(m.note)}">
+        <button class="saveNote">Save</button>
+        <span class="note noteMsg" style="margin:0"></span>
+      </div>
+      <pre>${escapeHtml(m.text)}</pre></details>`).join('')
     : '<span class="empty">No matches yet.</span>';
 }
+
+async function saveNote(bar) {
+  const msg = bar.querySelector('.noteMsg');
+  const r = await api('/api/note', { seed: bar.dataset.seed, verdict: bar.querySelector('.verdict').value, note: bar.querySelector('.noteIn').value });
+  msg.className = r.ok ? 'note noteMsg' : 'note noteMsg err';
+  msg.textContent = r.ok ? 'Saved' : (r.error || r);
+  if (r.ok) { document.activeElement?.blur(); matchesShown = null; refresh(); }
+}
+$('matches').addEventListener('change', e => { if (e.target.matches('.verdict')) saveNote(e.target.closest('.notebar')); });
+$('matches').addEventListener('click', e => { if (e.target.matches('.saveNote')) saveNote(e.target.closest('.notebar')); });
+$('matches').addEventListener('keydown', e => {
+  if (e.target.matches('.noteIn') && e.key === 'Enter') saveNote(e.target.closest('.notebar'));
+  if (e.target.matches('.noteIn') && e.key === 'Escape') { e.target.blur(); matchesShown = null; refresh(); }
+});
 
 function escapeHtml(t) { return t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
 
@@ -208,7 +309,7 @@ const startBody = () => ({ processes: parseInt($('procs').value) || 1, priority:
 $('btnStart').onclick = () => control('/api/start', startBody());
 $('btnStop').onclick = () => control('/api/stop', {});
 $('btnKill').onclick = () => confirm('Force-quit all workers? They lose up to 3 seconds of progress.') && control('/api/kill', {});
-$('btnNew').onclick = () => confirm('Start a new search? Current results are moved to a dated results_… folder.') && control('/api/new', startBody());
+$('btnNew').onclick = () => confirm(`Start a new ${current()?.label ?? ''} search? Current results are moved to a dated ${current()?.resultsDir ?? 'results'}_… folder.`) && control('/api/new', startBody());
 
 // ---------- describe ----------
 async function describe(seed) {
@@ -229,12 +330,14 @@ document.addEventListener('click', e => {
 // ---------- config editor ----------
 const FIELDS = [
   { key: 'ascension', label: 'Ascension', type: 'number', min: 0, max: 10, help: 'A1+ adds elites to the map, which makes forced elites much more common.' },
-  { key: 'act1', label: 'Act 1', type: 'select', from: 'acts' },
+  { key: 'character', label: 'Character', type: 'select', from: 'characters' },
+  { key: 'act1', label: 'Act 1', type: 'select', from: 'acts', any: true },
   { key: 'firstElite', label: 'First elite', type: 'select', from: 'elites', any: true, help: 'The elite every route is forced into. "Any" lists which one it is.' },
   { key: 'latestEliteRow', label: 'Latest elite row', type: 'number', min: 6, max: 14, help: 'Floor = row + 1. Row 9 is the chest row, row 15 the rest sites before the boss.' },
   { key: 'extraRoomsBeforeElite', label: 'Extra rooms allowed before the elite', type: 'list', from: 'rooms', help: 'Besides fights, "?" rooms and the chest.' },
   { key: 'allowedEvents', label: 'Allowed events', type: 'list', from: 'events', help: 'What a "?" room may turn into on the way.' },
   { key: 'allowedCards', label: 'Allowed cards', type: 'list', from: 'cards', help: 'Every card offered on the way (fights, events, shops) must be on this list. Empty disables the check.' },
+  { key: 'forbiddenCards', label: 'Forbidden cards', type: 'list', from: 'cards', help: 'No card offered on the way (fights, events, shops) may be on this list.' },
   { key: 'allowedRelics', label: 'Allowed relics', type: 'list', from: 'relics', help: 'Relics a chest, shop or This or That may offer. Empty allows any.' },
   { key: 'forbiddenPotions', label: 'Forbidden potions', type: 'list', from: 'potions', help: 'May not be obtainable on the way.' },
   { key: 'allowedNeowRelics', label: 'Allowed Neow relics', type: 'list', from: 'relics', help: 'Empty allows any Neow option (each is replayed).' },
@@ -242,8 +345,13 @@ const FIELDS = [
 ];
 
 function catalogItems(from) {
-  const items = catalog[from];
-  return items.map(x => typeof x === 'string' ? { id: x, name: x, group: '' } : x);
+  let items = catalog[from].map(x => typeof x === 'string' ? { id: x, name: x, group: '' } : x);
+  if (from === 'cards') {
+    // Offer only the selected character's cards and colorless ones.
+    const ch = catalog.characters.find(c => c.id === config.character);
+    if (ch) items = items.filter(c => c.group.startsWith(ch.name + ' ') || c.group.startsWith('Colorless '));
+  }
+  return items;
 }
 
 function renderConfig() {
@@ -264,17 +372,18 @@ function renderConfig() {
       if (f.any) sel.add(new Option('Any', ''));
       for (const it of catalogItems(f.from)) sel.add(new Option(it.group ? `${it.name} (${it.group})` : it.name, it.id));
       sel.value = config[f.key];
-      sel.onchange = () => config[f.key] = sel.value;
+      sel.onchange = () => { config[f.key] = sel.value; if (f.key === 'character') renderConfig(); };
       el.append(sel);
       cols.simple.push(el);
     } else {
       const items = catalogItems(f.from), byId = Object.fromEntries(items.map(i => [i.id, i]));
       const chips = document.createElement('div');
       chips.className = 'chips';
+      const allById = f.from === 'cards' ? Object.fromEntries(catalog.cards.map(i => [i.id, i])) : byId;
       for (const id of config[f.key]) {
         const chip = document.createElement('span');
         chip.className = 'chip';
-        chip.textContent = byId[id] ? byId[id].name : id;
+        chip.textContent = allById[id] ? allById[id].name : id;
         chip.title = id;
         const x = document.createElement('button');
         x.textContent = '×';
@@ -317,14 +426,20 @@ function renderConfig() {
 }
 
 async function loadConfig() {
-  config = await api('/api/config');
+  const asked = profile;
+  const c = await api('/api/config');
+  if (asked !== profile) return;
+  config = c;
   for (const f of FIELDS) if (f.type === 'list') config[f.key] ??= [];
+  config.character ??= 'NECROBINDER';
+  savedConfig = JSON.stringify(config);
   renderConfig();
   $('saveMsg').textContent = '';
 }
 $('btnReload').onclick = loadConfig;
 $('btnSave').onclick = async () => {
   const r = await api('/api/config', config);
+  if (r.ok) savedConfig = JSON.stringify(config);
   $('saveMsg').className = r.ok ? 'note' : 'note err';
   $('saveMsg').textContent = r.ok
     ? 'Saved. Running workers keep their old filters until restarted; seeds already checked are not rechecked.'
@@ -332,10 +447,14 @@ $('btnSave').onclick = async () => {
   refresh();
 };
 
+window.addEventListener('beforeunload', e => { if (config && JSON.stringify(config) !== savedConfig) e.preventDefault(); });
+
 (async () => {
-  catalog = await api('/api/catalog');
-  await loadConfig();
-  refresh();
+  [catalog, profiles] = await Promise.all([api('/api/catalog'), api('/api/profiles')]);
+  let want = decodeURIComponent(location.hash.slice(1));
+  if (!profiles.some(p => p.id === want)) { try { want = localStorage.getItem('profile'); } catch { want = null; } }
+  if (!profiles.some(p => p.id === want)) want = profiles[0]?.id ?? '';
+  await selectProfile(want);
   setInterval(refresh, 2000);
 })();
 </script>

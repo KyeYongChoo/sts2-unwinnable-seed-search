@@ -1,7 +1,8 @@
 # Project notes for Claude
 
-Goal: find a Slay the Spire 2 (v0.111.0) Necrobinder seed where Act 1 forces every route into an early elite with
-only weak cards, relics and potions on the way, as evidence that an unwinnable seed exists. See README.md for usage.
+Goal: find a Slay the Spire 2 (v0.111.0) seed (Necrobinder, and Ironclad via `character`) where Act 1 forces every
+route into an early elite with only weak cards, relics and potions on the way, as evidence that an unwinnable seed
+exists. See README.md for usage.
 
 ## Ground rules
 
@@ -50,6 +51,9 @@ only weak cards, relics and potions on the way, as evidence that an unwinnable s
   min/max gold per route and replays both cases. Relic-giving options (This or That, Luminous Choir tribute, Unrest
   Site kill) roll rarity on the Rewards RNG. Dense Vegetation's Rest is a rest-site heal plus a fight with normal
   rewards (event fights don't mark a hallway room visited). Tablet of Truth uses only its own RNG.
+- Underdocks events: Waterlogged Scriptorium needs 55g, Endless Conveyor 120g (not modelled: its dishes draw potions
+  and colorless cards from the Rewards RNG), Trash Heap >5 HP (relic or colorless card from its own RNG). Punch Off
+  gives Rewards-RNG relics (not modelled). Abyssal Baths and Spiraling Whirlpool are HP/enchant only.
 - Pickups that crash natively and are skipped: `LEAFY_POULTICE` (MASSIVE_SCROLL is multiplayer-only).
 - Winged Boots allows free travel (any node in the next row) 3 times, which breaks forced routes; it's excluded via
   `forbiddenNeowRelics`.

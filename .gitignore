@@ -3,3 +3,4 @@ obj/
 results/
 *.user
 .vs/
+results_*/
